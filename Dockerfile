@@ -1,8 +1,10 @@
-FROM node:22
+FROM node:18-bullseye
 
-RUN apt-get update && \
-    apt-get install -y ffmpeg python3 python3-pip curl && \
-    pip3 install --break-system-packages -U yt-dlp
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    python3 \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -12,4 +14,4 @@ RUN npm install
 
 COPY . .
 
-CMD ["node", "index.js"]
+CMD ["npm", "start"]

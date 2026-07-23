@@ -1,6 +1,5 @@
 require("dotenv").config();
 
-// سێرڤەری وێب بۆ UptimeRobot
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -202,16 +201,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       } else {
         await interaction.reply({ content: '❌ هەڵەیەک ڕوویدا لە جێبەجێکردنی ئەم فەرمانە.', ephemeral: true }).catch(() => {});
       }
-    }
-  }
-  else if (interaction.isStringSelectMenu()) {
-    try {
-      // مامەڵەکردن لەگەڵ مێنوی هەڵبژاردن بۆ ڕێگریکردن لە This interaction failed
-      if (!interaction.deferred && !interaction.replied) {
-        await interaction.deferUpdate().catch(() => {});
-      }
-    } catch (error) {
-      console.error("Select Menu Error:", error);
     }
   }
   else if (interaction.isButton() && interaction.customId === "create_ticket") {

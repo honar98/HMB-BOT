@@ -3,18 +3,22 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBui
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('help')
-        .setDescription('پیشاندانی پێڕستی یارمەتی و فەرمانەکانی بۆت'),
+        .setDescription('پیشاندانی پێڕستی سەرەکی یارمەتی و فەرمانەکان بە شێوازێکی پڕۆفیشناڵ'),
     async execute(interaction) {
         const embed = new EmbedBuilder()
-            .setTitle('🤖 ناوەندی یارمەتی بۆتی HMB')
-            .setDescription('بەخێربێیت بۆ سیستەمی یارمەتی بۆتەکەت!\n\nتکایە لە خوارەوە لە مێنوی هەڵبژاردن یەکێک لە بەشەکان دیاری بکە بۆ بینینی فەرمانەکان:')
+            .setTitle('🤖 ناوەندی فەرمانەکان و یارمەتی بۆتی HMB')
+            .setDescription(
+                'بەخێربێیت بۆ سیستەمی یارمەتی پێشکەوتووی بۆتەکەمان! 🌟\n\n' +
+                'سەرتافەی فەرمانەکانی بۆت ئێستا بە شێوازی **Slash Commands (`/`)** کاردەکەن بۆ خێرایی و ئاسانکاری زیاتر.\n\n' +
+                '📌 **تکایە لە مێنوی خوارەوە یەکێک لە بەشەکان هەڵبژێرە بۆ بینینی فەرمانەکان:**'
+            )
             .setColor('#5865F2')
             .addFields(
-                { name: '🎵 مۆسیقا (Music)', value: 'لێدان و بەڕێوەبردنی گۆرانییەکان', inline: true },
-                { name: '🛡️ پاسەوان (Moderation)', value: 'پاراستنی سێرڤەر و پاککردنەوە', inline: true },
-                { name: '🎫 تیکێت (Ticket)', value: 'دروستکردنی تیکێتی کێشەکان', inline: true },
-                { name: '🎉 دیاری (Giveaway)', value: 'سازکردنی سوپرایز و دیارییەکان', inline: true },
-                { name: '⚙️ گشتی (General)', value: 'فەرمانە گشتییەکان و خزمەتگوزاری', inline: true }
+                { name: '🎵 مۆسیقا (Music)', value: 'لێدان و بەڕێوەبردنی گۆرانییەکان بە `/`', inline: true },
+                { name: '🛡️ پاسەوان (Moderation)', value: 'پاراستنی سێرڤەر و پاککردنەوە بە `/`', inline: true },
+                { name: '🎫 تیکێت (Ticket)', value: 'دروستکردنی سیستەمی تیکێت بە `/`', inline: true },
+                { name: '🎉 دیاری (Giveaway)', value: 'سازکردنی سوپرایز و گیوێوەی بە `/`', inline: true },
+                { name: '⚙️ گشتی (General)', value: 'فەرمانە گشتییەکان و خزمەتگوزاری بە `/`', inline: true }
             )
             .setTimestamp()
             .setFooter({ text: `داواکراوە لەلایەن ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
@@ -22,17 +26,17 @@ module.exports = {
         const row = new ActionRowBuilder().addComponents(
             new StringSelectMenuBuilder()
                 .setCustomId('help_menu')
-                .setPlaceholder('📌 تکایە بەشێک هەڵبژێرە...')
+                .setPlaceholder('✨ تکایە بەشێکی مەبەست هەڵبژێرە...')
                 .addOptions([
                     {
-                        label: 'سەرەکی (Home)',
-                        description: 'گەڕانەوە بۆ پەڕەی سەرەکی یارمەتی',
+                        label: 'پەڕەی سەرەکی (Home)',
+                        description: 'گەڕانەوە بۆ ڕووبەری سەرەکی یارمەتی',
                         value: 'home',
                         emoji: '🏠'
                     },
                     {
                         label: 'مۆسیقا (Music)',
-                        description: 'فەرمانەکانی لێدانی گۆرانی و ستریم',
+                        description: 'فەرمانەکانی لێدانی مۆسیقا و ستریم',
                         value: 'music',
                         emoji: '🎵'
                     },
@@ -44,19 +48,19 @@ module.exports = {
                     },
                     {
                         label: 'تیکێت (Ticket)',
-                        description: 'فەرمانەکانی دروستکردنی تیکێت',
+                        description: 'فەرمانەکانی تیکێت و ستاف',
                         value: 'ticket',
                         emoji: '🎫'
                     },
                     {
                         label: 'دیاری (Giveaway)',
-                        description: 'فەرمانەکانی سوپرایز و گیوێوەی',
+                        description: 'فەرمانەکانی سوپرایز و دیاری',
                         value: 'giveaway',
                         emoji: '🎉'
                     },
                     {
                         label: 'گشتی (General)',
-                        description: 'فەرمانە گشتییەکان و پینگ',
+                        description: 'فەرمانە گشتییەکان و زانیاری',
                         value: 'general',
                         emoji: '⚙️'
                     }

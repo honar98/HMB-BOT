@@ -28,7 +28,6 @@ const {
 
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
-const { YouTubeExtractor } = require("@discord-player/extractor");
 
 const spamUsers = new Map();
 
@@ -47,11 +46,24 @@ const client = new Client({
 const player = new Player(client);
 client.player = player;
 
-// تۆمارکردنی ئەکستراکتۆری یوتیوب بە شێوەیەکی زۆر ڕاست و فەرمی
+// بارکردنی پارێزراوی ئەکستراکتەرەکان بۆ ڕێگریکردن لە هەڵەی undefined
 (async () => {
   try {
-    await player.extractors.register(YouTubeExtractor, {});
-    console.log("🎵 YouTube Extractor registered successfully!");
+    const extractorModule = require("@discord-player/extractor");
+    const YouTubeExtractor = extractorModule.YouTubeExtractor || extractorModule.default?.YouTubeExtractor;
+    
+    if (YouTubeExtractor) {
+      await player.extractors.register(YouTubeExtractor, {});
+      console.log("🎵 YouTube Extractor registered successfully!");
+    } else {
+      const DefaultExtractors = extractorModule.DefaultExtractors || extractorModule.default?.DefaultExtractors;
+      if (DefaultExtractors) {
+        await player.extractors.loadMulti(DefaultExtractors);
+        console.log("🎵 Default Extractors loaded successfully!");
+      } else {
+        console.log("⚠️ Warning: Could not find automatic extractors.");
+      }
+    }
   } catch (e) {
     console.error("Error loading extractors:", e);
   }

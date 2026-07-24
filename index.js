@@ -29,7 +29,7 @@ const {
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
 
-const spamUsers = new Map();
+const spamTracker = new Map();
 
 const client = new Client({
   intents: [
@@ -46,7 +46,6 @@ const client = new Client({
 const player = new Player(client);
 client.player = player;
 
-// بارکردنی پارێزراوی ئەکستراکتەرەکان بۆ ڕێگریکردن لە هەڵەی undefined
 (async () => {
   try {
     const extractorModule = require("@discord-player/extractor");
@@ -128,22 +127,50 @@ client.on(Events.MessageCreate, async (message) => {
     if (fs.existsSync("./antispam.json")) {
       const config = JSON.parse(fs.readFileSync("./antispam.json", "utf8"));
       if (config.enabled) {
-        const now = Date.now();
-        const userId = message.author.id;
+        if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+          const now = Date.now();
+          const userId = message.author.id;
+          const channel = message.channel;
 
-        if (!spamUsers.has(userId)) {
-          spamUsers.set(userId, []);
-        }
+          if (!spamTracker.has(userId)) {
+            spamTracker.set(userId, []);
+          }
 
-        const messages = spamUsers.get(userId);
-        messages.push(now);
+          const timestamps = spamTracker.get(userId);
+          timestamps.push(now);
 
-        const recent = messages.filter(time => now - time < 5000);
-        spamUsers.set(userId, recent);
+          const timeWindow = 7000;
+          const recent = timestamps.filter(time => now - time < timeWindow);
+          spamTracker.set(userId, recent);
 
-        if (recent.length >= 5) {
-          await message.delete().catch(() => {});
-          return message.channel.send(`⚠️ ${message.author} سپام مەکە.`);
+          if (recent.length >= 5) {
+            spamTracker.set(userId, []);
+
+            const member = await message.guild.members.fetch(userId).catch(() => null);
+
+            if (member && member.moderatable) {
+              await member.timeout(5 * 60 * 1000, 'سپام کردن - ٥ پەیامی لەسەریەک').catch(() => {});
+            }
+
+            const fetched = await channel.messages.fetch({ limit: 30 }).catch(() => null);
+            if (fetched) {
+              const userMsgs = fetched.filter(m => m.author.id === userId);
+              for (const [id, msg] of userMsgs) {
+                await msg.delete().catch(() => {});
+              }
+            }
+
+            const warningMsg = await channel.send({
+              content: `⚠️ <@${userId}> **سپام قەدەغەیە!** ٥ پەیامت لەسەریەک نارد، سەرجەم پەیامەکانت سڕرانەوە و بۆ ماوەی **٥ خولەک** مێوتکرایت.`
+            }).catch(() => {});
+
+            if (warningMsg) {
+              setTimeout(() => {
+                warningMsg.delete().catch(() => {});
+              }, 5000);
+            }
+            return;
+          }
         }
       }
     }

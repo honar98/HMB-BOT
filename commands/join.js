@@ -16,20 +16,25 @@ module.exports = {
         }
 
         try {
-            // چونکە ڕەنگە هێنانی مۆسیقاکە کەمێک بخایەنێت، سڵاوەکە دوا دەخەین (Defer)
             await interaction.deferReply();
 
-            await interaction.client.player.play(vc, "https://www.youtube.com/watch?v=dQw4w9WgXcQ", {
-                nodeOptions: {
-                    metadata: interaction.channel,
-                },
-            });
+            // دروستکردنی کویو یان پەیوەندیکردن بە کەناڵەکەوە بێ ئەوەی ناچار بێت شتێک لێبدات
+            let queue = interaction.client.player.nodes.get(interaction.guild.id);
+            if (!queue) {
+                queue = interaction.client.player.nodes.create(interaction.guild, {
+                    metadata: interaction.channel
+                });
+            }
 
-            await interaction.editReply("✅ بۆتەکە هاتە ناو کەناڵی دەنگییەکەت!");
+            if (!queue.connection) {
+                await queue.connect(vc);
+            }
+
+            await interaction.editReply("✅ بۆتەکە بە سەرکەوتوویی هاتە ناو کەناڵی دەنگییەکەت!");
         } catch (e) {
             console.error(e);
             
-            const errorMsg = "❌ " + (e.message || "هەڵەیەک ڕوویدا لە کاتی پەیوەندیکردن بە کەناڵەکەوە.");
+            const errorMsg = "❌ هەڵەیەک ڕوویدا لە کاتی هێنانی بۆت بۆ کەناڵەکە.";
             
             if (interaction.deferred || interaction.replied) {
                 await interaction.editReply(errorMsg);

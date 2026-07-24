@@ -1,28 +1,42 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const figlet = require('figlet');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ascii')
-        .setDescription('گۆڕینی دەق بۆ شێوازی تێکستی هونەری گەورە')
+        .setDescription('گۆڕینی دەقی ئینگلیزی بۆ شێوازی ئەسکی ئاررت (ASCII Art)')
         .addStringOption(option =>
             option.setName('text')
-                .setDescription('ئەو دەقەی دەتەوێت بیگۆڕیت (بە ئینگلیزی)')
-                .setRequired(true)
-        ),
+                .setDescription('ئەو دەقەی دەتهەوێت بیگۆڕیت (بە ئینگلیزی)')
+                .setRequired(true)),
+
     async execute(interaction) {
         const text = interaction.options.getString('text');
 
-        if (text.length > 10) {
-            return interaction.reply({ content: '❌ تکایە دەقێکی کورتتر بنووسە (کەمتر لە ١٠ پیت)!', ephemeral: true });
+        // پشکنین بۆ درێژی دەقەکە بۆ ئەوەی ناشیرین نەبێت
+        if (text.length > 20) {
+            return interaction.reply({
+                content: '❌ **ببوورە:** تکایە دەقێکی کورتتر بنووسە (کەمتر لە ٢٠ پیت) تاوەکو شێوازەکەی تێکنەچێت.',
+                ephemeral: true
+            });
         }
 
         figlet(text, async function(err, data) {
             if (err) {
-                return interaction.reply({ content: '❌ هەڵەیەک ڕوودا لە دروستکردنی دەقەکە.', ephemeral: true });
+                return interaction.reply({
+                    content: '❌ هەڵەیەک ڕوویدا لە دروستکردنی دەقەکە.',
+                    ephemeral: true
+                });
             }
 
-            await interaction.reply(`\`\`\`${data}\`\`\``);
+            const embed = new EmbedBuilder()
+                .setColor('#2b2d31')
+                .setTitle('✨ ASCII Art Generator')
+                .setDescription(`\`\`\`text\n${data}\`\`\``)
+                .setFooter({ text: `Requested by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+                .setTimestamp();
+
+            await interaction.reply({ embeds: [embed] });
         });
     },
 };

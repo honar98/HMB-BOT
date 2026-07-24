@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ship')
-        .setDescription('شایپ کردنی نێوان دوو کەس و پشکنینی ڕێژەی خۆشەویستی ❤️')
+        .setDescription('پشکنی ڕێژەی خۆشەویستی نێوان دوو کەس ❤️')
         .addUserOption(option =>
             option.setName('user1')
                 .setDescription('کەسی یەکەم')
@@ -27,30 +27,31 @@ module.exports = {
 
         // دیاریکردنی پەیام و ڕەنگ بەپێی ڕێژەی خۆشەویستییەکە
         let message = "";
-        let color = "#FF1493"; // ڕەنگی پەمەیی سەرەتایی
+        let color = "#FF1493";
 
         if (percentage > 85) {
-            message = "✨ ئەوە خۆشەویستییەکی ڕاستەقینەیە! زۆر هاوسەنگن! پێکەوە زۆر جوانن! 😍";
-            color = "#00FF7F"; // سەوزی کاڵ
+            message = "✨ ئەوە خۆشەویستییەکی ڕاستەقینەیە! زۆر هاوسەنگن و پێکەوە زۆر جوانن! 😍";
+            color = "#00FF7F";
         } else if (percentage > 50) {
             message = "💖 پەیوەندییەکی باشە و هیوای سەرکەوتنی بۆ دەخوازم! 😉";
-            color = "#FFD700"; // زێڕی
+            color = "#FFD700";
         } else {
-            message = "💔 پێویستە کاتێکی زیاتر بە یەکەوە ببەن بەسەر! پێشەنگی کەمترە هێشتا. 😅";
-            color = "#FF4500"; // سووری نارنجی
+            message = "💔 پێویستە کاتێکی زیاتر بە یەکەوە ببەن بەسەر و یەکدی بناسن! 😅";
+            color = "#FF4500";
         }
 
-        // دروستکردنی ئێمبێدی پرۆفیشناڵ
+        // دروستکردنی ئێمبێدی پرۆفیشناڵ بە وێنەی گەورە لە پشتەوە (Image)
         const embed = new EmbedBuilder()
             .setColor(color)
-            .setTitle('💘 پشکنی ڕێژەی خۆشەویستی (Ship)')
-            .setDescription(`بەستنەوەی نێوان **${user1}** و **${user2}**`)
+            .setTitle('💘 پشکنی ڕێژەی خۆشەویستی (Ship Match)')
+            .setDescription(`🔗 بەستنەوەی نێوان **${user1}** و **${user2}**`)
             .addFields(
-                { name: '👥 ئەندامەکان', value: `${user1.username} 🔀 ${user2.username}`, inline: false },
-                { name: '❤️ ڕێژەی خۆشەویستی', value: `**${percentage}%**\n\`${progressBar}\``, inline: false },
-                { name: '💬 رای بۆت', value: message, inline: false }
+                { name: '👥 ئەندامەکان', value: `> ${user1} 🔀 ${user2}`, inline: false },
+                { name: '❤️ ڕێژەی خۆشەویستی', value: `> **${percentage}%**\n> \`${progressBar}\``, inline: false },
+                { name: '💬 ڕای بۆت', value: `> *${message}*`, inline: false }
             )
-            .setThumbnail(user2.displayAvatarURL({ dynamic: true }))
+            .setThumbnail(user1.displayAvatarURL({ dynamic: true, size: 512 }))
+            .setImage('https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=1000&auto=format&fit=crop') // وێنەیەکی جوانی ڕۆمانسی لە پشتەوە
             .setFooter({ 
                 text: `داواکراوە لەلایەن ${interaction.user.tag}`, 
                 iconURL: interaction.user.displayAvatarURL({ dynamic: true }) 

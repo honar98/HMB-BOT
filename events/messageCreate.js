@@ -33,35 +33,37 @@ module.exports = {
                 const timestamps = spamTracker.get(userId);
                 timestamps.push(currentTime);
 
+                // ماوەی ٦ چرکە بۆ دیاریکردنی ٥ پەیامی لەسەریەک
                 const timeWindow = 6000; 
                 const recentMessages = timestamps.filter(time => currentTime - time < timeWindow);
                 spamTracker.set(userId, recentMessages);
 
                 if (recentMessages.length >= 5) {
-                    spamTracker.set(userId, []);
+                    spamTracker.set(userId, []); // پاککردنەوەی لۆگ
 
                     try {
+                        // ١. سزای بێدەنگکردن (Timeout) بۆ ماوەی تەواوی ٥ خولەک
                         const member = await message.guild.members.fetch(userId);
-
-                        // ١. بێدەنگکردن (Timeout)
                         if (member && member.moderatable) {
                             await member.timeout(5 * 60 * 1000, 'سپام کردن و ناردنی پەیامی زۆر لەسەریەک');
                         } else {
-                            console.log("❌ بۆتەکە ناتوانێت ئەم بەکارهێنەرە Timeout بکات (دەسەڵاتی نییە یان ڕۆڵەکەی نزمترە)");
+                            console.log("⚠️ بۆتەکە ناتوانێت ئەم بەکارهێنەرە مێوت بکات (ڕەنگە ڕۆڵی بۆتەکە لە خوار ڕۆڵی ئەوەوە بێت).");
                         }
 
-                        // ٢. سڕینەوەی پەیامەکان
-                        const fetchedMessages = await channel.messages.fetch({ limit: 20 });
+                        // ٢. ڕکێشکدن و سڕینەوەی هەموو پەیامەکانی ئەو کەسە پێکەوە لە چاتەکەدا
+                        const fetchedMessages = await channel.messages.fetch({ limit: 100 });
                         const userMessages = fetchedMessages.filter(m => m.author.id === userId);
 
                         if (userMessages.size > 0) {
+                            // بەکارهێنانی bulkDelete بۆ سڕینەوەی هەموو پەیامەکان پێکەوە
                             await channel.bulkDelete(userMessages, true).catch(err => {
-                                console.log("❌ هەڵە لە سڕینەوەی پەیامەکان:", err);
+                                console.log("هەڵە لە سڕینەوەی بە کۆمەڵی پەیامەکان: ", err);
                             });
                         }
 
+                        // ٣. ناردنی ئاگاداری و پاشان سڕینەوەی
                         const warningMsg = await channel.send({
-                            content: `⚠️ <@${userId}> **سپام مەکرە!** پەیامەکانت سڕرانەوە و بۆ ماوەی **٥ خولەک** بێدەنگکرایت.`
+                            content: `⚠️ <@${userId}> **سپام مەکرە!** سەرجەم پەیامەکانت سڕرانەوە و بۆ ماوەی **٥ خولەک** مێوتکرایت.`
                         });
 
                         setTimeout(() => {
@@ -70,7 +72,7 @@ module.exports = {
 
                         return;
                     } catch (error) {
-                        console.error('❌ هەڵە لە جێبەجێکردنی سزای ئەنتی سپام:', error);
+                        console.error('❌ هەڵە لە جێبەجێکردنی سیستەمی ئەنتی سپام:', error);
                     }
                 }
             }

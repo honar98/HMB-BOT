@@ -1,4 +1,5 @@
 const { PermissionsBitField, Events } = require('discord.js');
+const fs = require('fs');
 
 // خەزنکردنی کاتی پەیامی بەکارهێنەران بۆ ئەنتی سپام
 const spamTracker = new Map();
@@ -10,9 +11,22 @@ module.exports = {
         if (message.author.bot || !message.guild) return;
 
         // ==========================================
-        // ١. سیستەمی ئەنتی سپام (Anti-Spam System)
+        // ١. پشکنینی دۆخی ئەنتی سپام لە فایلی antispam.json
         // ==========================================
-        if (message.client.antiSpam !== false) {
+        const file = "./antispam.json";
+        let antiSpamEnabled = false;
+
+        if (fs.existsSync(file)) {
+            try {
+                const fileData = JSON.parse(fs.readFileSync(file, 'utf8'));
+                antiSpamEnabled = fileData.enabled;
+            } catch (e) {
+                console.error("هەڵە لە خوێندنەوەی فایلی antispam.json:", e);
+            }
+        }
+
+        // ئەگەر ئەنتی سپام لە فایلەکەدا چالاک بوو (true)
+        if (antiSpamEnabled) {
             if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
                 const userId = message.author.id;
                 const channel = message.channel;
@@ -25,20 +39,20 @@ module.exports = {
                 const timestamps = spamTracker.get(userId);
                 timestamps.push(currentTime);
 
-                const timeWindow = 4000; // 4 چرکە
+                const timeWindow = 6000; // ٦ چرکە
                 const recentMessages = timestamps.filter(time => currentTime - time < timeWindow);
                 spamTracker.set(userId, recentMessages);
 
-                // ئەگەر لە ماوەی ٤ چرکەدا ٥ پەیام یان زیاتری نارد
+                // ئەگەر لە ماوەیەکی کەمدا ٥ پەیام یان زیاتری نارد
                 if (recentMessages.length >= 5) {
                     spamTracker.set(userId, []);
 
                     try {
                         const member = await message.guild.members.fetch(userId);
 
-                        // بێدەنگکردن بۆ ماوەی ٥ خولەک (Timeout)
+                        // بێدەنگکردن (Timeout) بۆ ماوەی ٥ خولەک
                         if (member && member.moderatable) {
-                            await member.timeout(5 * 60 * 1000, 'سپام کردن لە چاتدا (Anti-Spam System)');
+                            await member.timeout(5 * 60 * 1000, 'سپام کردن و ناردنی پەیامی زۆر لەسەریەک');
                         }
 
                         // سڕینەوەی پەیامەکانی ئەو کەسە
@@ -50,14 +64,14 @@ module.exports = {
                         }
 
                         const warningMsg = await channel.send({
-                            content: `⚠️ <@${userId}> **سپام مەکرە!** پەیامەکانت سڕرانەوە و بۆ ماوەی ٥ خولەک بێدەنگکرایت.`
+                            content: `⚠️ <@${userId}> **سپام مەکرە!** پەیامەکانت سڕرانەوە و بۆ ماوەی **٥ خولەک** بێدەنگکرایت.`
                         });
 
                         setTimeout(() => {
                             warningMsg.delete().catch(() => {});
                         }, 5000);
 
-                        return; // ئەگەر سپام ئەنجام درا، ڕێگری لە بەردەوامبوونی کۆدەکە دەکەین بۆ ئەوەی بەدوای تگدا نەگەڕێت
+                        return; // ڕێگری لە بەردەوامبوونی کۆدەکە بۆ ئەوەی بەدوای تگدا نەگەڕێت
                     } catch (error) {
                         console.error('هەڵە لە سیستەمی ئەنتی سپام:', error);
                     }

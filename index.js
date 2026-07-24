@@ -1,4 +1,4 @@
-require("dotenv").config();
+Require("dotenv").config();
 
 const express = require("express");
 const app = express();
@@ -121,7 +121,19 @@ client.once(Events.ClientReady, async (c) => {
 });
 
 client.on(Events.MessageCreate, async (message) => {
-  if (message.author.bot || !message.inGuild()) return;
+  // ڕێگریکردن لە سپامکردنی بۆتەکانی تر (سڕینەوەی نامەی بۆتەکانی دی)
+  if (message.author.bot) {
+    if (message.client.user.id !== message.author.id && message.inGuild()) {
+      try {
+        await message.delete();
+      } catch (e) {
+        // فەرامۆشکردنی هەڵە ئەگەر دەسەڵاتی نەبوو
+      }
+    }
+    return;
+  }
+
+  if (!message.inGuild()) return;
 
   try {
     if (fs.existsSync("./antispam.json")) {

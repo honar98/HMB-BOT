@@ -1,14 +1,75 @@
-const { Events } = require('discord.js');
+const { PermissionsBitField, Events } = require('discord.js');
+
+// خەزنکردنی کاتی پەیامی بەکارهێنەران بۆ ئەنتی سپام
+const spamTracker = new Map();
 
 module.exports = {
     name: Events.MessageCreate,
     async execute(message) {
-        // ئەگەر نامەکە لەلایەن بۆتێکی ترەوە نێردرابوو، وەڵامی مەدەرەوە
-        if (message.author.bot) return;
+        // پشتگوێخستنی بۆت و پەیامی دەرەوەی سێرڤەر
+        if (message.author.bot || !message.guild) return;
 
-        // پشکنین بۆ ئەوەی ئایا بۆتەکە تگ (Mention) کراوە
+        // ==========================================
+        // ١. سیستەمی ئەنتی سپام (Anti-Spam System)
+        // ==========================================
+        if (message.client.antiSpam !== false) {
+            if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+                const userId = message.author.id;
+                const channel = message.channel;
+                const currentTime = Date.now();
+
+                if (!spamTracker.has(userId)) {
+                    spamTracker.set(userId, []);
+                }
+
+                const timestamps = spamTracker.get(userId);
+                timestamps.push(currentTime);
+
+                const timeWindow = 4000; // 4 چرکە
+                const recentMessages = timestamps.filter(time => currentTime - time < timeWindow);
+                spamTracker.set(userId, recentMessages);
+
+                // ئەگەر لە ماوەی ٤ چرکەدا ٥ پەیام یان زیاتری نارد
+                if (recentMessages.length >= 5) {
+                    spamTracker.set(userId, []);
+
+                    try {
+                        const member = await message.guild.members.fetch(userId);
+
+                        // بێدەنگکردن بۆ ماوەی ٥ خولەک (Timeout)
+                        if (member && member.moderatable) {
+                            await member.timeout(5 * 60 * 1000, 'سپام کردن لە چاتدا (Anti-Spam System)');
+                        }
+
+                        // سڕینەوەی پەیامەکانی ئەو کەسە
+                        const fetchedMessages = await channel.messages.fetch({ limit: 50 });
+                        const userMessages = fetchedMessages.filter(m => m.author.id === userId);
+
+                        if (userMessages.size > 0) {
+                            await channel.bulkDelete(userMessages, true).catch(() => {});
+                        }
+
+                        const warningMsg = await channel.send({
+                            content: `⚠️ <@${userId}> **سپام مەکرە!** پەیامەکانت سڕرانەوە و بۆ ماوەی ٥ خولەک بێدەنگکرایت.`
+                        });
+
+                        setTimeout(() => {
+                            warningMsg.delete().catch(() => {});
+                        }, 5000);
+
+                        return; // ئەگەر سپام ئەنجام درا، ڕێگری لە بەردەوامبوونی کۆدەکە دەکەین بۆ ئەوەی بەدوای تگدا نەگەڕێت
+                    } catch (error) {
+                        console.error('هەڵە لە سیستەمی ئەنتی سپام:', error);
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // ٢. وەڵامدانەوەی زیرەکی دەستکرد کاتێک بۆتەکە تگ دەکرێت
+        // ==========================================
         if (message.mentions.has(message.client.user)) {
-            // لابردنی تگەکە لە نامەکە بۆ ئەوەی تەنها پرسیارەکە بنێرین
+            // لابردنی تگەکە لە نامەکە بۆ ئەوەی تەنها پرسیارەکە بمێنێت
             const query = message.content
                 .replace(`<@!${message.client.user.id}>`, '')
                 .replace(`<@${message.client.user.id}>`, '')

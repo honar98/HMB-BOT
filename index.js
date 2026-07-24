@@ -4,7 +4,6 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// وێب سەوەر بۆ ڕەیلوەی تا بۆتەکە بە ئاگایی بمێنێتەوە
 app.get("/", (req, res) => {
   res.send("HMB-BOT is active and running 24/7!");
 });
@@ -29,7 +28,7 @@ const {
 
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
-const { YoutubeExtractor } = require("@discord-player/extractor");
+const { YouTubeExtractor } = require("@discord-player/extractor");
 
 const spamUsers = new Map();
 
@@ -45,13 +44,13 @@ const client = new Client({
   ],
 });
 
-// دروستکردنی پلەیەر و تۆمارکردنی ئێستراکتۆری یوتیوب بە شێوەیەکی ڕاست
 const player = new Player(client);
 client.player = player;
 
+// تۆمارکردنی ئەکستراکتۆری یوتیوب بە شێوەیەکی زۆر ڕاست و فەرمی
 (async () => {
   try {
-    await player.extractors.register(YoutubeExtractor, {});
+    await player.extractors.register(YouTubeExtractor, {});
     console.log("🎵 YouTube Extractor registered successfully!");
   } catch (e) {
     console.error("Error loading extractors:", e);

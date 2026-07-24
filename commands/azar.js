@@ -1,11 +1,12 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } = require('discord.js');
 
-// لیستی تراکەکان بە ناونیشانی جیاواز و تایبەت بۆ ازهر الناطق
+// لیستی گۆرانی و تراکەکان (پێنج تراکی تێدایە)
 const azarTracks = [
-    { label: "ازهر الناطق - موال حزين و مؤثر", value: "azar_1", query: "ازهر الناطق موال" },
-    { label: "ازهر الناطق - دبكة حماسية نار", value: "azar_2", query: "ازهر الناطق دبكة" },
-    { label: "ازهر الناطق - حفلة شعبي جديدة", value: "azar_3", query: "ازهر الناطق حفلة" },
-    { label: "ازهر الناطق - أغنية طرب وسلطنة", value: "azar_4", query: "ازهر الناطق طرب" }
+    { label: "MONTAGEM PEGADORA", value: "song_1", query: "MONTAGEM PEGADORA" },
+    { label: "MONTAGEM FANTASY (Super Slowed)", value: "song_2", query: "MONTAGEM FANTASY Super Slowed" },
+    { label: "سلام وعن بعد - سید سلام الحسيني", value: "song_3", query: "سلام وعن بعد سید سلام الحسيني عزاء الناصرية الموحد" },
+    { label: "خلصن بجي عيوني - مسلم الوائلي", value: "song_4", query: "خلصن بجي عيوني مسلم الوائلي" },
+    { label: "انا المركز الاول بالبطولات", value: "song_5", query: "انا المركز الاول بالبطولات" }
 ];
 
 module.exports = {
@@ -14,7 +15,6 @@ module.exports = {
         .setDescription('مێنوی تایبەت بە گۆرانییەکانی ازهر الناطق و لێدانی ڕاستەوخۆ 🎵'),
 
     async execute(interaction) {
-        // پشکنین بۆ ئەوەی ئایا بەکارهێنەر لە کەناڵی دەنگیدایە یان نا
         const vc = interaction.member.voice.channel;
         if (!vc) {
             return interaction.reply({ 
@@ -23,21 +23,19 @@ module.exports = {
             });
         }
 
-        // دروستکردنی ئێمبێدی ڕەنگاوڕەنگ و پرۆفیشناڵ
         const embed = new EmbedBuilder()
             .setColor('#9B59B6')
-            .setTitle('🎧 مێنوی تایبەتی ازهر الناطق')
-            .setDescription('تکایە لە مێنوی خوارەوە ئەو تراکەی دەتەوێت هەڵیبژێرە بۆ ئەوەی ڕاستەوخۆ بۆت لێبدرێت:')
+            .setTitle('🎧 مێنوی دەنگپەخشی ازهر الناطق')
+            .setDescription('تکایە لە مێنوی خوارەوە گۆرانی یان تراکی دەتەوێت هەڵیبژێرە:')
             .setTimestamp()
             .setFooter({ 
                 text: `داواکراوە لەلایەن ${interaction.user.tag}`, 
                 iconURL: interaction.user.displayAvatarURL({ dynamic: true }) 
             });
 
-        // دروستکردنی مێنوی هەڵبژاردن (Dropdown Menu)
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('azar_menu')
-            .setPlaceholder('تراکێک لە مێنوی ازهر الناطق هەڵبژێرە...')
+            .setPlaceholder('تراکێک هەڵبژێرە...')
             .addOptions(
                 azarTracks.map(track => ({
                     label: track.label,
@@ -48,10 +46,8 @@ module.exports = {
 
         const row = new ActionRowBuilder().addComponents(selectMenu);
 
-        // ناردنی پەیامەکە لەگەڵ مێنوەکە
         const response = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
 
-        // کۆلێکتۆر بۆ وەرگرتنی هەڵبژاردنی بەکارهێنەر (بۆ ماوەی ٣٠ چرکە)
         const collector = response.createMessageComponentCollector({ componentType: ComponentType.StringSelect, time: 30000 });
 
         collector.on('collect', async i => {
@@ -62,13 +58,11 @@ module.exports = {
             const selectedValue = i.values[0];
             const track = azarTracks.find(t => t.value === selectedValue);
 
-            // نیشاندانی بارودۆخی چاوەڕوانی
             await i.deferUpdate();
 
             try {
                 const player = i.client.player;
                 
-                // لێدانی ڕاستەوخۆی گۆرانییەکە بەپێی ناونیشان و کوێری تایبەت
                 const { track: playedTrack } = await player.play(vc, track.query, {
                     nodeOptions: {
                         metadata: i.channel,
@@ -89,7 +83,7 @@ module.exports = {
                 await i.editReply({ embeds: [successEmbed], components: [] });
             } catch (error) {
                 console.error(error);
-                await i.editReply({ content: "❌ هەڵەیەک ڕوویدا لە لێدانی ئەم تراکە. دڵنیا ببەوە لەوەی ناونیشانەکە ڕاستە.", embeds: [], components: [] });
+                await i.editReply({ content: "❌ هەڵەیەک ڕوویدا لە لێدانی ئەم تراکە. دڵنیا ببەوە لەوەی ناوەکە ڕاستە.", embeds: [], components: [] });
             }
 
             collector.stop();

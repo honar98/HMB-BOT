@@ -1,11 +1,11 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } = require('discord.js');
 
-// لیستی تراکەکان بە ناونیشان (بێ پێویست بوون بە لینکی ڕەق)
+// لیستی تراکەکان بە ناونیشانی جیاواز و تایبەت بۆ ازهر الناطق
 const azarTracks = [
-    { label: "تراکی یەکەم - ازهر الناطق", value: "azar_1", query: "ازهر الناطق" },
-    { label: "تراکی دووەم - ازهر الناطق", value: "azar_2", query: "ازهر الناطق" },
-    { label: "تراکی سێیەم - ازهر الناطق", value: "azar_3", query: "ازهر الناطق" },
-    { label: "تراکی چوارەم - ازهر الناطق", value: "azar_4", query: "ازهر الناطق" }
+    { label: "ازهر الناطق - موال حزين و مؤثر", value: "azar_1", query: "ازهر الناطق موال" },
+    { label: "ازهر الناطق - دبكة حماسية نار", value: "azar_2", query: "ازهر الناطق دبكة" },
+    { label: "ازهر الناطق - حفلة شعبي جديدة", value: "azar_3", query: "ازهر الناطق حفلة" },
+    { label: "ازهر الناطق - أغنية طرب وسلطنة", value: "azar_4", query: "ازهر الناطق طرب" }
 ];
 
 module.exports = {
@@ -68,7 +68,7 @@ module.exports = {
             try {
                 const player = i.client.player;
                 
-                // لێدانی ڕاستەوخۆی گۆرانییەکە بەپێی ناونیشانەکەی
+                // لێدانی ڕاستەوخۆی گۆرانییەکە بەپێی ناونیشان و کوێری تایبەت
                 const { track: playedTrack } = await player.play(vc, track.query, {
                     nodeOptions: {
                         metadata: i.channel,

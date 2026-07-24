@@ -4,7 +4,7 @@ const { createCanvas, loadImage } = require('@napi-rs/canvas');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ship')
-        .setDescription('پشکنی ڕێژەی خۆشەویستی نێوان دوو کەس بە شێوازی وێنەی دڵخواز ❤️')
+        .setDescription('پشکنی ڕێژەی خۆشەویستی نێوان دوو کەس ❤️')
         .addUserOption(option =>
             option.setName('user1')
                 .setDescription('کەسی یەکەم')
@@ -15,7 +15,6 @@ module.exports = {
                 .setRequired(true)),
 
     async execute(interaction) {
-        // چاوەڕوانکردنی بۆت تاوەکو وێنەکە دروست دەبێت
         await interaction.deferReply();
 
         const user1 = interaction.options.getUser('user1');
@@ -23,6 +22,26 @@ module.exports = {
 
         // دروستکردنی ڕێژەیەکی هەڕەمەکی لە 0 تا 100
         const percentage = Math.floor(Math.random() * 101);
+
+        // دروستکردنی بارێکی جوانی پێشکەوتن (Progress Bar)
+        const filledBars = Math.round(percentage / 10);
+        const emptyBars = 10 - filledBars;
+        const progressBar = '█'.repeat(filledBars) + '░'.repeat(emptyBars);
+
+        // دیاریکردنی پەیام و ڕەنگ بەپێی ڕێژەی خۆشەویستییەکە
+        let message = "";
+        let embedColor = "#FF1493";
+
+        if (percentage > 85) {
+            message = "✨ ئەوە خۆشەویستییەکی ڕاستەقینەیە! زۆر هاوسەنگن پێکەوە! 😍";
+            embedColor = "#00FF7F";
+        } else if (percentage > 50) {
+            message = "💖 پەیوەندییەکی باشە و هیوای سەرکەوتنی بۆ دەخوازم! 😉";
+            embedColor = "#FFD700";
+        } else {
+            message = "💔 پێویستە کاتێکی زیاتر بە یەکەوە ببەن بەسەر! 😅";
+            embedColor = "#FF4500";
+        }
 
         try {
             // دروستکردنی کەنڤاس بە قەبارەی 700 بە 250 پیکسڵ
@@ -38,7 +57,7 @@ module.exports = {
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            // تاریککردنی کەمێک باکگراوندەکە بۆ دەرکەوتنی ڕووناکی وێنەکان
+            // تاریککردنی کەمێک باکگراوندەکە
             ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -52,7 +71,6 @@ module.exports = {
             ctx.drawImage(avatar1, 40, 55, 140, 140);
             ctx.restore();
 
-            // چوارچێوەی جوانی دەوری وێنەی یەکەم
             ctx.strokeStyle = '#ff4757';
             ctx.lineWidth = 6;
             ctx.beginPath();
@@ -69,32 +87,35 @@ module.exports = {
             ctx.drawImage(avatar2, 520, 55, 140, 140);
             ctx.restore();
 
-            // چوارچێوەی جوانی دەوری وێنەی دووەم
             ctx.strokeStyle = '#ff4757';
             ctx.lineWidth = 6;
             ctx.beginPath();
             ctx.arc(590, 125, 70, 0, Math.PI * 2, true);
             ctx.stroke();
 
-            // 3. نووسینی ڕێژەی خۆشەویستی و هێمای دڵ لە ناوەڕاستدا
+            // 3. بازنەی سوور و دڵ لە ناوەڕاستدا بۆ جوانی
+            ctx.fillStyle = '#ff4757';
+            ctx.beginPath();
+            ctx.arc(350, 125, 30, 0, Math.PI * 2);
+            ctx.fill();
+
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 45px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(`${percentage}%`, 350, 115);
-
             ctx.font = 'bold 22px sans-serif';
-            let statusText = percentage > 85 ? "✨ زۆر هاوسەنگن!" : percentage > 50 ? "💖 پەیوەندییەکی باشە!" : "💔 پێویستی بە کاتە!";
-            ctx.fillText(statusText, 350, 160);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('❤️', 350, 126);
 
-            // دروستکردنی فایلی وێنەکە بۆ ناردن
+            // دروستکردنی فایلەکە بۆ ناردن
             const attachment = new AttachmentBuilder(canvas.toBuffer('image/png'), { name: 'ship-result.png' });
-
-            let embedColor = percentage > 85 ? '#00FF7F' : percentage > 50 ? '#FFD700' : '#FF4500';
 
             const embed = new EmbedBuilder()
                 .setColor(embedColor)
                 .setTitle('💘 پشکنی ڕێژەی خۆشەویستی (Ship Match)')
                 .setDescription(`🔗 **${user1.username}** لەگەڵ **${user2.username}**`)
+                .addFields(
+                    { name: '❤️ ڕێژەی خۆشەویستی', value: `> **${percentage}%**\n> \`${progressBar}\``, inline: false },
+                    { name: '💬 ڕای بۆت', value: `> *${message}*`, inline: false }
+                )
                 .setImage('attachment://ship-result.png')
                 .setFooter({ text: `داواکراوە لەلایەن ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
                 .setTimestamp();

@@ -20,7 +20,7 @@ module.exports = {
             }
         }
 
-        // ئەگەر ئەنتی سپام لە فایلەکەدا چالاک بوو (ON)
+        // ئەگەر ئەنتی سپام چالاک بوو
         if (antiSpamEnabled) {
             if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
                 const userId = message.author.id;
@@ -34,39 +34,40 @@ module.exports = {
                 const timestamps = spamTracker.get(userId);
                 timestamps.push(currentTime);
 
-                // ماوەی ٧ چرکە بۆ پشکنینی ٥ پەیامی لەسەریەک
                 const timeWindow = 7000; 
                 const recentMessages = timestamps.filter(time => currentTime - time < timeWindow);
                 spamTracker.set(userId, recentMessages);
 
-                // مەرجی ناردنی ٥ پەیامی لەسەریەک
+                // ئەگەر ٥ پەیامی لەسەریەک نارد
                 if (recentMessages.length >= 5) {
-                    spamTracker.set(userId, []); // پاککردنەوەی لۆگ
+                    spamTracker.set(userId, []);
 
                     try {
-                        const member = message.member || await message.guild.members.fetch(userId).catch(() => null);
+                        const member = await message.guild.members.fetch(userId).catch(() => null);
 
-                        // ١. سزای بێدەنگکردن (Timeout) بۆ ماوەی ٥ خولەک
+                        // ١. هەوڵدان بۆ مێوتکردن و چاپکردنی هۆکارەکە ئەگەر سەرکەوتوو نەبوو
                         if (member) {
-                            try {
+                            if (member.moderatable) {
                                 await member.timeout(5 * 60 * 1000, 'سپام کردن و ناردنی ٥ پەیامی لەسەریەک');
                                 console.log(`✅ سەرکەوتوو بوو لە مێوتکردنی بەکارهێنەر: ${message.author.tag}`);
-                            } catch (timeoutErr) {
-                                console.error(`❌ هەڵە لە مێوتکردن! دڵنیابەوە کە ڕۆڵی بۆت لە سەرووی بەکارهێنەرەوەیە و دەسەڵاتی Moderate Members هەیە:`, timeoutErr);
+                            } else {
+                                console.log(`❌ ناتوانرێت ئەم بەکارهێنەرە مێوت بکرێت! هۆکار: ڕۆڵی بۆت لە خوار ڕۆڵی ئەم کەسەوەیە یان ئەم کەسە ئەدمنە.`);
                             }
                         }
 
-                        // ٢. سڕینەوەی هەموو پەیامەکانی ئەو کەسە یەک بە یەک بە شێوەیەکی مسۆگەر
-                        const fetchedMessages = await channel.messages.fetch({ limit: 25 });
+                        // ٢. سڕینەوەی پەیامەکان یەک بە یەک و نیشاندانی هەڵە ئەگەر هەبێت
+                        const fetchedMessages = await channel.messages.fetch({ limit: 30 });
                         const userMessages = fetchedMessages.filter(m => m.author.id === userId);
 
                         for (const [id, msg] of userMessages) {
-                            await msg.delete().catch(() => {});
+                            await msg.delete().catch(err => {
+                                console.log(`❌ هەڵە لە سڕینەوەی پەیام:`, err.message);
+                            });
                         }
 
-                        // ٣. ناردنی ئاگاداری و سڕینەوەی پاش ٥ چرکە
+                        // ٣. ناردنی ئاگاداری
                         const warningMsg = await channel.send({
-                            content: `⚠️ <@${userId}> **سپام قەدەغەیە!** ٥ پەیامت لەسەریەک نارد، بۆیە سەرجەم پەیامەکانت سڕرانەوە و بۆ ماوەی **٥ خولەک** مێوتکرایت.`
+                            content: `⚠️ <@${userId}> **سپام قەدەغەیە!** ٥ پەیامت لەسەریەک نارد، سەرجەم پەیامەکانت سڕرانەوە و بۆ ماوەی **٥ خولەک** مێوتکرایت.`
                         });
 
                         setTimeout(() => {

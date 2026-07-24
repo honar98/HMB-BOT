@@ -1,18 +1,13 @@
 const { PermissionsBitField, Events } = require('discord.js');
 const fs = require('fs');
 
-// خەزنکردنی کاتی پەیامی بەکارهێنەران بۆ ئەنتی سپام
 const spamTracker = new Map();
 
 module.exports = {
     name: Events.MessageCreate,
     async execute(message) {
-        // پشتگوێخستنی بۆت و پەیامی دەرەوەی سێرڤەر
         if (message.author.bot || !message.guild) return;
 
-        // ==========================================
-        // ١. پشکنینی دۆخی ئەنتی سپام لە فایلی antispam.json
-        // ==========================================
         const file = "./antispam.json";
         let antiSpamEnabled = false;
 
@@ -25,7 +20,6 @@ module.exports = {
             }
         }
 
-        // ئەگەر ئەنتی سپام لە فایلەکەدا چالاک بوو (true)
         if (antiSpamEnabled) {
             if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
                 const userId = message.author.id;
@@ -39,28 +33,31 @@ module.exports = {
                 const timestamps = spamTracker.get(userId);
                 timestamps.push(currentTime);
 
-                const timeWindow = 6000; // ٦ چرکە
+                const timeWindow = 6000; 
                 const recentMessages = timestamps.filter(time => currentTime - time < timeWindow);
                 spamTracker.set(userId, recentMessages);
 
-                // ئەگەر لە ماوەیەکی کەمدا ٥ پەیام یان زیاتری نارد
                 if (recentMessages.length >= 5) {
                     spamTracker.set(userId, []);
 
                     try {
                         const member = await message.guild.members.fetch(userId);
 
-                        // بێدەنگکردن (Timeout) بۆ ماوەی ٥ خولەک
+                        // ١. بێدەنگکردن (Timeout)
                         if (member && member.moderatable) {
                             await member.timeout(5 * 60 * 1000, 'سپام کردن و ناردنی پەیامی زۆر لەسەریەک');
+                        } else {
+                            console.log("❌ بۆتەکە ناتوانێت ئەم بەکارهێنەرە Timeout بکات (دەسەڵاتی نییە یان ڕۆڵەکەی نزمترە)");
                         }
 
-                        // سڕینەوەی پەیامەکانی ئەو کەسە
-                        const fetchedMessages = await channel.messages.fetch({ limit: 50 });
+                        // ٢. سڕینەوەی پەیامەکان
+                        const fetchedMessages = await channel.messages.fetch({ limit: 20 });
                         const userMessages = fetchedMessages.filter(m => m.author.id === userId);
 
                         if (userMessages.size > 0) {
-                            await channel.bulkDelete(userMessages, true).catch(() => {});
+                            await channel.bulkDelete(userMessages, true).catch(err => {
+                                console.log("❌ هەڵە لە سڕینەوەی پەیامەکان:", err);
+                            });
                         }
 
                         const warningMsg = await channel.send({
@@ -71,19 +68,16 @@ module.exports = {
                             warningMsg.delete().catch(() => {});
                         }, 5000);
 
-                        return; // ڕێگری لە بەردەوامبوونی کۆدەکە بۆ ئەوەی بەدوای تگدا نەگەڕێت
+                        return;
                     } catch (error) {
-                        console.error('هەڵە لە سیستەمی ئەنتی سپام:', error);
+                        console.error('❌ هەڵە لە جێبەجێکردنی سزای ئەنتی سپام:', error);
                     }
                 }
             }
         }
 
-        // ==========================================
-        // ٢. وەڵامدانەوەی زیرەکی دەستکرد کاتێک بۆتەکە تگ دەکرێت
-        // ==========================================
+        // وەڵامدانەوەی زیرەکی دەستکرد کاتێک بۆتەکە تگ دەکرێت
         if (message.mentions.has(message.client.user)) {
-            // لابردنی تگەکە لە نامەکە بۆ ئەوەی تەنها پرسیارەکە بمێنێت
             const query = message.content
                 .replace(`<@!${message.client.user.id}>`, '')
                 .replace(`<@${message.client.user.id}>`, '')
@@ -92,10 +86,8 @@ module.exports = {
             if (!query) return;
 
             try {
-                // نیشاندانی دۆخی تایپکردن لە چاتەکەدا
                 await message.channel.sendTyping();
 
-                // ناردنی داواکاری بۆ OpenAI API
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -111,7 +103,6 @@ module.exports = {
                 const data = await response.json();
                 const replyText = data.choices?.[0]?.message?.content || "ببوورە، ناتوانم لەم پرسیارە تێبگەم.";
 
-                // وەڵامدانەوە بۆ بەکارهێنەر لە دیسکۆرد
                 await message.reply(replyText);
 
             } catch (error) {

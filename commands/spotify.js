@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('spotify')
-        .setDescription('لێدانی پلەیلیستی کوردی لە سپۆتیفای لەگەڵ دوگمەی سکیپ بۆ چەندین جار'),
+        .setDescription('لێدانی پلەیلیستی کوردی لە سپۆتیفای لەگەڵ دوگمەی سکیپ بە بێ نامەی بێزارکەر'),
     async execute(interaction) {
         const voiceChannel = interaction.member.voice.channel;
         if (!voiceChannel) {
@@ -13,7 +13,7 @@ module.exports = {
             });
         }
 
-        const playlistUrl = "https://open.spotify.com/playlist/2J4j4taiTOwxM60lR48KO5?si=uv23MpiERoK65_Dh1VJbiQ&utm_source=copy-link&pi=v-X0TlHGTmiGc";
+        const playlistUrl = "https://open.spotify.com/playlist/2J4j4taiToWx601R48K057Si?si=Uv23mP1eRoK85_Dh1VJblQ";
         const playlistName = "Kurdish Music Brand New";
 
         await interaction.deferReply();
@@ -44,14 +44,14 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#1DB954')
                 .setTitle(`🎵 ${playlistName}`)
-                .setDescription(`پلەیلیستەکە دەستی بە لێدان کرد لە فۆیس چانڵ!\n\n🔹 **دوگمەی سکیپ چالاکە** و دەتوانیت بۆ چەندین گۆرانی بەدوای یەکدا بەکاریبهێنیت.`)
+                .setDescription(`پلەیلیستەکە دەستی بە لێدان کرد لە فۆیس چانڵ!\n\n🔹 **دوگمەی سکیپ چالاکە** و بە بێ ناردنی هیچ نامەیەک گۆرانییەکان دەگۆڕێت بۆ گۆرانی داهاتوو.`)
                 .setTimestamp();
 
             const message = await interaction.editReply({ embeds: [embed], components: [row] });
 
             const collector = message.createMessageComponentCollector({ 
                 componentType: ComponentType.Button, 
-                time: 3600000 // یەک کاتژمێر کارا دەبێت
+                time: 3600000 
             });
 
             collector.on('collect', async i => {
@@ -62,7 +62,8 @@ module.exports = {
                     }
                     try {
                         queue.node.skip();
-                        await i.reply({ content: '⏭️ **بە سەرکەوتوویی سکیپ کرا!** دەتوانیت جارێکی تریش سکیپ بکەیت.', ephemeral: true });
+                        // تەنها پەسەندکردنی کلیکەکە بێ ناردنی هیچ نامەیەک یان پەنجەرەیەک
+                        await i.deferUpdate(); 
                     } catch (err) {
                         await i.reply({ content: '❌ ناتوانرێت سکیپ بکرێت.', ephemeral: true });
                     }

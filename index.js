@@ -28,7 +28,8 @@ const {
 
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
-const { DefaultExtractors } = require("@discord-player/extractor");
+const { YoutubeiExtractor } = require("discord-player-youtubei");
+const { SpotifyExtractor } = require("@discord-player/extractor");
 
 const spamTracker = new Map();
 
@@ -47,18 +48,17 @@ const client = new Client({
 const player = new Player(client);
 client.player = player;
 
-// بارکردنی سەرجەم ئەکتراکتۆرە سەرەکییەکان بە شێوازێکی سەلامەت و بێ کێشە
 (async () => {
   try {
-    await player.extractors.loadMulti(DefaultExtractors);
-    console.log("🎵 Default Extractors loaded successfully!");
+    await player.extractors.loadMulti([YoutubeiExtractor, SpotifyExtractor]);
+    console.log("🎵 Spotify & YouTube Extractors loaded successfully!");
   } catch (e) {
     console.error("Error loading extractors:", e);
   }
 })();
 
-player.events.on("error", (error) => console.error("Player error:", error));
-player.events.on("playerError", (error) => console.error("Player internal error:", error));
+player.events.on("error", (queue, error) => console.error(`Player error: ${error.message}`));
+player.events.on("playerError", (queue, error) => console.error(`Player internal error: ${error.message}`));
 
 const PREFIX = "$";
 client.commands = new Collection();

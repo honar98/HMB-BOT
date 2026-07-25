@@ -28,6 +28,7 @@ const {
 
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
+const { DefaultExtractors } = require("@discord-player/extractor");
 
 const spamTracker = new Map();
 
@@ -48,7 +49,7 @@ client.player = player;
 
 (async () => {
   try {
-    await player.extractors.loadDefault();
+    await player.extractors.loadMulti(DefaultExtractors);
     console.log("🎵 Default Extractors loaded successfully!");
   } catch (e) {
     console.error("Error loading extractors:", e);

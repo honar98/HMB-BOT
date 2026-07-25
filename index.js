@@ -28,8 +28,6 @@ const {
 
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
-const { YoutubeiExtractor } = require("discord-player-youtubei");
-const { SpotifyExtractor } = require("@discord-player/extractor");
 
 const spamTracker = new Map();
 
@@ -50,8 +48,9 @@ client.player = player;
 
 (async () => {
   try {
-    await player.extractors.loadMulti([YoutubeiExtractor, SpotifyExtractor]);
-    console.log("🎵 Spotify & YouTube Extractors loaded successfully!");
+    // بارکردنی دەستپێکی پلاینەر بە بێ هیچ کێشەیەک
+    await player.extractors.loadDefault();
+    console.log("🎵 Default Extractors loaded successfully!");
   } catch (e) {
     console.error("Error loading extractors:", e);
   }

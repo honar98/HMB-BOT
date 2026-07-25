@@ -30,10 +30,8 @@ module.exports = {
             const { track } = await player.play(vc, query, {
                 nodeOptions: {
                     metadata: interaction.channel,
-                    leaveOnEmpty: true,
-                    leaveOnEmptyCooldown: 30000,
-                    leaveOnEnd: true,
-                    leaveOnEndCooldown: 30000,
+                    leaveOnEmpty: false,      // کاتێک کەناڵەکە بەتاڵ دەبێت نەیەتە دەرەوە
+                    leaveOnEnd: false,        // کاتێک پلەیلیست یان گۆرانی تەواو دەبێت نەیەتە دەرەوە
                     selfDeaf: true
                 }
             });

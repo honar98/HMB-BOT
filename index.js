@@ -28,6 +28,7 @@ const {
 
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
+const { YoutubeExtractor } = require("@discord-player/extractor");
 
 const spamTracker = new Map();
 
@@ -48,21 +49,9 @@ client.player = player;
 
 (async () => {
   try {
-    const extractorModule = require("@discord-player/extractor");
-    const YouTubeExtractor = extractorModule.YouTubeExtractor || extractorModule.default?.YouTubeExtractor;
-    
-    if (YouTubeExtractor) {
-      await player.extractors.register(YouTubeExtractor, {});
-      console.log("🎵 YouTube Extractor registered successfully!");
-    } else {
-      const DefaultExtractors = extractorModule.DefaultExtractors || extractorModule.default?.DefaultExtractors;
-      if (DefaultExtractors) {
-        await player.extractors.loadMulti(DefaultExtractors);
-        console.log("🎵 Default Extractors loaded successfully!");
-      } else {
-        console.log("⚠️ Warning: Could not find automatic extractors.");
-      }
-    }
+    // بارکردنی فەرمی و ڕێکی extractorـی یوتیوب بۆ ئەوەی لینکەکان کار بکەن
+    await player.extractors.register(YoutubeExtractor, {});
+    console.log("🎵 YouTube Extractor registered successfully!");
   } catch (e) {
     console.error("Error loading extractors:", e);
   }
@@ -121,14 +110,11 @@ client.once(Events.ClientReady, async (c) => {
 });
 
 client.on(Events.MessageCreate, async (message) => {
-  // ڕێگریکردن لە سپامکردنی بۆتەکانی تر (سڕینەوەی نامەی بۆتەکانی دی)
   if (message.author.bot) {
     if (message.client.user.id !== message.author.id && message.inGuild()) {
       try {
         await message.delete();
-      } catch (e) {
-        // فەرامۆشکردنی هەڵە ئەگەر دەسەڵاتی نەبوو
-      }
+      } catch (e) {}
     }
     return;
   }

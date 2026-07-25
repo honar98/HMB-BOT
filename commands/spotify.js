@@ -3,8 +3,8 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('spotify')
-        .setDescription('لێدانی پلەیلیستی سپۆتیفای لە فۆیس چانڵدا لەگەڵ دوگمەی سکیپ'),
-    async execute(interaction, client) {
+        .setDescription('لێدانی پلەیلیستی کوردی لە سپۆتیفای لەگەڵ دوگمەی سکیپ'),
+    async execute(interaction) {
         const voiceChannel = interaction.member.voice.channel;
         if (!voiceChannel) {
             return interaction.reply({ 
@@ -19,9 +19,14 @@ module.exports = {
         await interaction.deferReply();
 
         try {
-            await client.distube.play(voiceChannel, playlistUrl, {
-                textChannel: interaction.channel,
-                member: interaction.member,
+            const player = interaction.client.player;
+            
+            await player.play(voiceChannel, playlistUrl, {
+                nodeOptions: {
+                    metadata: interaction.channel,
+                    leaveOnEmpty: true,
+                    leaveOnEnd: false,
+                }
             });
 
             const row = new ActionRowBuilder()
@@ -51,22 +56,22 @@ module.exports = {
 
             collector.on('collect', async i => {
                 if (i.customId === 'skip_song_btn') {
-                    const queue = client.distube.getQueue(interaction.guildId);
-                    if (!queue) {
+                    const queue = player.nodes.get(interaction.guildId);
+                    if (!queue || !queue.isPlaying()) {
                         return i.reply({ content: '❌ هیچ گۆرانییەک لە لیستدا نییە بۆ سکیپ کردن!', ephemeral: true });
                     }
                     try {
-                        await client.distube.skip(interaction.guildId);
+                        queue.node.skip();
                         await i.reply({ content: '⏭️ **بە سەرکەوتوویی سکیپ کرا!** گواستراوەوە بۆ گۆرانی داهاتوو.', ephemeral: true });
                     } catch (err) {
-                        await i.reply({ content: '❌ ناتوانرێت سکیپ بکرێت (ئەمە کۆتا گۆرانییە).', ephemeral: true });
+                        await i.reply({ content: '❌ ناتوانرێت سکیپ بکرێت.', ephemeral: true });
                     }
                 }
             });
 
         } catch (error) {
             console.error(error);
-            await interaction.editReply(`❌ هەڵەیەک ڕوودا لە لێدانی مۆسیقاکە: ${error.message}`);
+            await interaction.editReply(`❌ هەڵەیەک ڕوودا لە لێدانی پلەیلیستەکە: ${error.message}`);
         }
     },
 };

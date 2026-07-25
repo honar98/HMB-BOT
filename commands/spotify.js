@@ -27,7 +27,6 @@ module.exports = {
             return interaction.reply({ content: "❌ تکایە سەرەتا بچۆ ناو کەناڵێکی دەنگییەوە.", ephemeral: true });
         }
 
-        // دروستکردنی مینیوی سەرەکی (هەڵبژاردنی زمان)
         const getMainEmbed = () => new EmbedBuilder()
             .setTitle('🎵 مینیوی گۆرانییەکان - Spotify')
             .setDescription('تکایە زمانێک لە خوارەوە هەڵبژێرە بۆ بینینی گۆرانییەکان:')
@@ -38,9 +37,9 @@ module.exports = {
                 .setCustomId('spotify_language_select')
                 .setPlaceholder('زمانێک هەڵبژێرە...')
                 .addOptions([
-                    { label: 'کوردی (Kurdish)', description: 'پەخشکردنی گۆرانی کوردی', value: 'kurdish', emoji: ' Kurdish' },
-                    { label: 'عەرەبی (Arabic)', description: 'پەخشکردنی گۆرانی عەرەبی', value: 'arabic', emoji: ' Arabic' },
-                    { label: 'تورکی (Turkish)', description: 'پەخشکردنی گۆرانی تورکی', value: 'turkish', emoji: ' Turkish' }
+                    { label: 'کوردی (Kurdish)', description: 'پەخشکردنی گۆرانی کوردی', value: 'kurdish', emoji: '🎵' },
+                    { label: 'عەرەبی (Arabic)', description: 'پەخشکردنی گۆرانی عەرەبی', value: 'arabic', emoji: '🎶' },
+                    { label: 'تورکی (Turkish)', description: 'پەخشکردنی گۆرانی تورکی', value: 'turkish', emoji: '🎧' }
                 ])
         );
 

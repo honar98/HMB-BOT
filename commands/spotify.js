@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('spotify')
-        .setDescription('لێدانی پلەیلیستی کوردی لە سپۆتیفای لەگەڵ دوگمەی سکیپ'),
+        .setDescription('لێدانی پلەیلیستی کوردی لە سپۆتیفای لەگەڵ دوگمەی سکیپ بۆ چەندین جار'),
     async execute(interaction) {
         const voiceChannel = interaction.member.voice.channel;
         if (!voiceChannel) {
@@ -44,14 +44,14 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#1DB954')
                 .setTitle(`🎵 ${playlistName}`)
-                .setDescription(`پلەیلیستەکە دەستی بە لێدان کرد لە فۆیس چانڵ!\nدەتوانیت دوگمەی خوارەوە بۆ سکیپ کردنی گۆرانییەکان بەکاربهێنیت.`)
+                .setDescription(`پلەیلیستەکە دەستی بە لێدان کرد لە فۆیس چانڵ!\n\n🔹 **دوگمەی سکیپ چالاکە** و دەتوانیت بۆ چەندین گۆرانی بەدوای یەکدا بەکاریبهێنیت.`)
                 .setTimestamp();
 
             const message = await interaction.editReply({ embeds: [embed], components: [row] });
 
             const collector = message.createMessageComponentCollector({ 
                 componentType: ComponentType.Button, 
-                time: 3600000 
+                time: 3600000 // یەک کاتژمێر کارا دەبێت
             });
 
             collector.on('collect', async i => {
@@ -62,7 +62,7 @@ module.exports = {
                     }
                     try {
                         queue.node.skip();
-                        await i.reply({ content: '⏭️ **بە سەرکەوتوویی سکیپ کرا!** گواستراوەوە بۆ گۆرانی داهاتوو.', ephemeral: true });
+                        await i.reply({ content: '⏭️ **بە سەرکەوتوویی سکیپ کرا!** دەتوانیت جارێکی تریش سکیپ بکەیت.', ephemeral: true });
                     } catch (err) {
                         await i.reply({ content: '❌ ناتوانرێت سکیپ بکرێت.', ephemeral: true });
                     }

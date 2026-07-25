@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('spotify')
-        .setDescription('لێدانی پلەیلیستی سپۆتیفای لەگەڵ دوگمەی سکیپ لە هەمان مێنودا'),
+        .setDescription('لێدانی پلەیلیستی سپۆتیفای لە فۆیس چانڵدا لەگەڵ دوگمەی سکیپ'),
     async execute(interaction, client) {
         const voiceChannel = interaction.member.voice.channel;
         if (!voiceChannel) {
@@ -24,7 +24,6 @@ module.exports = {
                 member: interaction.member,
             });
 
-            // دروستکردنی دوگمەی لینک و دوگمەی سکیپ لە یەک ڕیزدا
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
@@ -45,7 +44,6 @@ module.exports = {
 
             const message = await interaction.editReply({ embeds: [embed], components: [row] });
 
-            // کۆلێکتۆر بۆ کارپێکردنی دوگمەی سکیپ لە هەمان پەیامدا
             const collector = message.createMessageComponentCollector({ 
                 componentType: ComponentType.Button, 
                 time: 3600000 

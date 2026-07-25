@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('spotify')
-        .setDescription('لێدانی پلەیلیستی کوردی بە بێ وەستان و بە دوگمەی سکیپ'),
+        .setDescription('لێدانی هەموو گۆرانییەکانی پلەیلیستی سپۆتیفای بە یەک فەرمان'),
     async execute(interaction) {
         const voiceChannel = interaction.member.voice.channel;
         if (!voiceChannel) {
@@ -13,16 +13,15 @@ module.exports = {
             });
         }
 
-        // بەکارهێنانی ڕستەی گەڕان بۆ هێنانی چەندین گۆرانی پێکەوە لە لیستەکەدا
-        const searchQuery = "Kurdish music mix playlist";
-        const playlistName = "Kurdish Music Brand New";
+        // لینکی جێگیرکراوی پلەیلیستەکەت لێرەدا دانراوە
+        const playlistUrl = "https://open.spotify.com/playlist/2J4j4taiTOwxM60lR48KO5?si=8RIHYcJaRnSiMBObAsh8Kw&utm_source=copy-link&pi=W9rDrtlfT3qyx";
 
         await interaction.deferReply();
 
         try {
             const player = interaction.client.player;
             
-            await player.play(voiceChannel, searchQuery, {
+            await player.play(voiceChannel, playlistUrl, {
                 nodeOptions: {
                     metadata: interaction.channel,
                     leaveOnEmpty: true,
@@ -35,7 +34,7 @@ module.exports = {
                     new ButtonBuilder()
                         .setLabel('گوێگرتن لە Spotify')
                         .setStyle(ButtonStyle.Link)
-                        .setURL('https://open.spotify.com'),
+                        .setURL(playlistUrl),
                     new ButtonBuilder()
                         .setCustomId('skip_song_btn')
                         .setLabel('⏭️ سکیپ (Skip)')
@@ -44,8 +43,8 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#1DB954')
-                .setTitle(`🎵 ${playlistName}`)
-                .setDescription(`پلەیلیستەکە دەستی بە لێدان کرد لە فۆیس چانڵ!\n\n🔹 **دوگمەی سکیپ چالاکە** و بە بێ ناردنی هیچ نامەیەک گۆرانییەکان دەگۆڕێت.`)
+                .setTitle(`🎵 پلەیلیستی سپۆتیفای`)
+                .setDescription(`پلەیلیستەکە دەستی بە لێدان کرد لە فۆیس چانڵ!\n\n🔹 **هەموو گۆرانییەکانی ناو لینکەکە خرانە نێو لیستەکەوە.**\n🔹 **دوگمەی سکیپ چالاکە** و بە بێ ناردنی هیچ نامەیەک گۆرانییەکان دەگۆڕێت.`)
                 .setTimestamp();
 
             const message = await interaction.editReply({ embeds: [embed], components: [row] });
@@ -72,7 +71,7 @@ module.exports = {
 
         } catch (error) {
             console.error(error);
-            await interaction.editReply(`❌ هەڵەیەک ڕوودا لە لێدانی پلەیلیستەکە: ${error.message}`);
+            await interaction.editReply(`❌ هەڵەیەک ڕوودا: نەتوانرا پلەیلیستەکە بخوێنرێتەوە. دڵنیابە لەوەی پاکێجی سپۆتیفای لە بۆتەکەدا کارا کراوە.`);
         }
     },
 };

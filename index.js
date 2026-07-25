@@ -48,7 +48,6 @@ client.player = player;
 
 (async () => {
   try {
-    // بارکردنی دەستپێکی پلاینەر بە بێ هیچ کێشەیەک
     await player.extractors.loadDefault();
     console.log("🎵 Default Extractors loaded successfully!");
   } catch (e) {

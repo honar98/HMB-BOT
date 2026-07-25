@@ -28,7 +28,7 @@ const {
 
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
-const { DefaultExtractors, YouTubeExtractor } = require("@discord-player/extractor");
+const { DefaultExtractors } = require("@discord-player/extractor");
 
 const spamTracker = new Map();
 
@@ -47,12 +47,11 @@ const client = new Client({
 const player = new Player(client);
 client.player = player;
 
-// بارکردنی سەرجەم ئەکتراکتۆرەکان و یوتیوب بە شێوازێکی فەرمی و زامنکراو
+// بارکردنی دروست و بێ کێشەی سەرجەم ئەکتراکتۆرەکان (یوتیوب بە شێوەی خۆکار لەخۆ دەگرێت)
 (async () => {
   try {
     await player.extractors.loadMulti(DefaultExtractors);
-    await player.extractors.register(YouTubeExtractor, {});
-    console.log("🎵 All Extractors & YouTube Extractor loaded successfully!");
+    console.log("🎵 Default Extractors loaded successfully!");
   } catch (e) {
     console.error("Error loading extractors:", e);
   }

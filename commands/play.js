@@ -26,6 +26,7 @@ module.exports = {
 
             const player = interaction.client.player;
             
+            // گەڕان و پەخشکردن بە شێوازێکی مۆدێرن و گونجاو لەگەڵ ڤێرژنی نوێ
             const { track } = await player.play(vc, query, {
                 nodeOptions: {
                     metadata: interaction.channel,
@@ -33,6 +34,7 @@ module.exports = {
                     leaveOnEmptyCooldown: 30000,
                     leaveOnEnd: true,
                     leaveOnEndCooldown: 30000,
+                    selfDeaf: true
                 }
             });
 

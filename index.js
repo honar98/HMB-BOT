@@ -33,7 +33,7 @@ const {
 
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
-const { YoutubeExtractor, SpotifyExtractor } = require("@discord-player/extractor");
+const { DefaultExtractors } = require("@discord-player/extractor");
 
 const spamTracker = new Map();
 
@@ -54,9 +54,8 @@ client.player = player;
 
 (async () => {
   try {
-    await player.extractors.register(YoutubeExtractor, {});
-    await player.extractors.register(SpotifyExtractor, {});
-    console.log("🎵 YouTube and Spotify Extractors registered successfully!");
+    await player.extractors.loadMulti(DefaultExtractors);
+    console.log("🎵 Default Extractors loaded successfully!");
   } catch (e) {
     console.error("Error loading extractors:", e);
   }

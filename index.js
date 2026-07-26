@@ -27,14 +27,14 @@ const {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ActionRowBuilder
+  ActionRowBuilder,
+  EmbedBuilder
 } = require("discord.js");
 
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
-const { DefaultExtractors } = require("@discord-player/extractor");
-
-const spamTracker = new Map();
+const { YoutubeExtractor } = require("@discord-player/extractor");
+const { SpotifyExtractor } = require("@discord-player/extractor");
 
 const client = new Client({
   intents: [
@@ -53,8 +53,9 @@ client.player = player;
 
 (async () => {
   try {
-    await player.extractors.loadMulti(DefaultExtractors);
-    console.log("🎵 Default Extractors loaded successfully!");
+    await player.extractors.register(YoutubeExtractor, {});
+    await player.extractors.register(SpotifyExtractor, {});
+    console.log("🎵 YouTube and Spotify Extractors registered successfully!");
   } catch (e) {
     console.error("Error loading extractors:", e);
   }
@@ -112,55 +113,6 @@ client.once(Events.ClientReady, async (c) => {
   }
 });
 
-client.on(Events.MessageCreate, async (message) => {
-  if (message.author.bot) {
-    if (message.client.user.id !== message.author.id && message.inGuild()) {
-      try {
-        await message.delete();
-      } catch (e) {}
-    }
-    return;
-  }
-
-  if (!message.inGuild()) return;
-
-  if (message.mentions.has(message.client.user)) {
-    const query = message.content
-      .replace(`<@!${message.client.user.id}>`, '')
-      .replace(`<@${message.client.user.id}>`, '')
-      .trim();
-
-    if (query) {
-      try {
-        await message.channel.sendTyping();
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: query }] }] })
-        });
-        const data = await response.json();
-        const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "ببوورە، ناتوانم لەم پرسیارە تێبگەم.";
-        await message.reply(replyText);
-      } catch (error) {
-        console.error("Gemini AI Error:", error);
-      }
-      return;
-    }
-  }
-
-  if (!message.content.startsWith(PREFIX)) return;
-  const args = message.content.slice(PREFIX.length).trim().split(/ +/);
-  const commandName = args.shift().toLowerCase();
-  const command = client.commands.get(commandName);
-  if (!command) return;
-
-  try {
-    await command.execute(message, args);
-  } catch (error) {
-    console.error(error);
-  }
-});
-
 client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isChatInputCommand()) {
     const command = client.slashCommands.get(interaction.commandName);
@@ -171,9 +123,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
     } catch (error) {
       console.error(error);
       if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({ content: '❌ هەڵەیەک ڕوویدا.', ephemeral: true }).catch(() => {});
+        await interaction.followUp({ content: '❌ هەڵەیەک ڕوویدا لە جێبەجێکردنی ئەم فەرمانە.', ephemeral: true }).catch(() => {});
       } else {
-        await interaction.reply({ content: '❌ هەڵەیەک ڕوویدا.', ephemeral: true }).catch(() => {});
+        await interaction.reply({ content: '❌ هەڵەیەک ڕوویدا لە جێبەجێکردنی ئەم فەرمانە.', ephemeral: true }).catch(() => {});
       }
     }
   }
@@ -202,13 +154,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
     try {
       await interaction.deferReply();
       const player = interaction.client.player;
+      
       const { track } = await player.play(vc, query, {
-        nodeOptions: { metadata: interaction.channel, leaveOnEmpty: false, leaveOnEnd: false, selfDeaf: true }
+        nodeOptions: { 
+          metadata: interaction.channel, 
+          leaveOnEmpty: false, 
+          leaveOnEnd: false, 
+          selfDeaf: true 
+        }
       });
-      await interaction.editReply(`🎵 ئێستا دەنگپەخش کراوە: **${track.title}**`);
+
+      const embed = new EmbedBuilder()
+        .setColor('#1DB954')
+        .setTitle('🎵 دەنگپەخشکرا')
+        .setDescription(`🎶 **${track.title}**\n👤 **گۆرانیبێژ:** ${track.author}`);
+
+      await interaction.editReply({ embeds: [embed] });
     } catch (e) {
       console.error(e);
-      await interaction.editReply("❌ هەڵەیەک ڕوویدا لە کاتی پەخشکردنی گۆرانییەکە. دڵنیا ببەوە لە ڕاستی ناوەکە یان لینکەکە.");
+      await interaction.editReply("❌ نەتوانرا گۆرانییەکە بدۆزرێتەوە یان لێبدرێت. دڵنیا ببەوە لە ڕاستی لینکەکە.");
     }
   }
   else if (interaction.isButton() && interaction.customId === "pause_resume") {

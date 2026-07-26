@@ -23,7 +23,12 @@ const {
   PermissionFlagsBits,
   Events,
   REST,
-  Routes
+  Routes,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  ActionRowBuilder,
+  EmbedBuilder
 } = require("discord.js");
 
 const { GiveawaysManager } = require("discord-giveaways");
@@ -278,6 +283,83 @@ client.on(Events.InteractionCreate, async (interaction) => {
         });
       }
     }
+  }
+  else if (interaction.isButton() && interaction.customId === "search_music") {
+    const modal = new ModalBuilder()
+      .setCustomId("musicSearchModal")
+      .setTitle("گەڕانی گۆرانی");
+
+    const songInput = new TextInputBuilder()
+      .setCustomId("songQueryInput")
+      .setLabel("ناوی گۆرانی یان لینکی یوتیوب/سپۆتیفای")
+      .setStyle(TextInputStyle.Short)
+      .setPlaceholder("Song name or link...")
+      .setRequired(true);
+
+    modal.addComponents(new ActionRowBuilder().addComponents(songInput));
+    return await interaction.showModal(modal);
+  }
+  else if (interaction.isModalSubmit() && interaction.customId === "musicSearchModal") {
+    const vc = interaction.member.voice.channel;
+    if (!vc) {
+      return interaction.reply({ content: "❌ تکایە سەرەتا بچۆ ناو کەناڵێکی دەنگییەوە.", ephemeral: true });
+    }
+
+    const query = interaction.fields.getTextInputValue("songQueryInput");
+    try {
+      await interaction.deferReply();
+      const player = interaction.client.player;
+      
+      const res = await player.play(vc, query, {
+        nodeOptions: { 
+          metadata: interaction.channel, 
+          leaveOnEmpty: false, 
+          leaveOnEnd: false, 
+          selfDeaf: true 
+        }
+      });
+
+      const track = res.track || (res.playlist ? res.playlist.tracks[0] : null);
+
+      const embed = new EmbedBuilder()
+        .setColor('#1DB954')
+        .setTitle('🎵 دەنگپەخشکرا')
+        .setDescription(`🎶 **${track ? track.title : query}**`);
+
+      await interaction.editReply({ embeds: [embed] });
+    } catch (e) {
+      console.error(e);
+      await interaction.editReply("❌ نەتوانرا گۆرانییەکە بدۆزرێتەوە یان لێبدرێت. دڵنیا ببەوە لە ڕاستی لینکەکە.");
+    }
+  }
+  else if (interaction.isButton() && interaction.customId === "pause_resume") {
+    const player = interaction.client.player;
+    const queue = player.nodes.get(interaction.guildId);
+    if (!queue || !queue.isPlaying()) return interaction.reply({ content: "❌ هیچ گۆرانییەک کار ناکات!", ephemeral: true });
+    
+    if (queue.node.isPaused()) {
+      queue.node.resume();
+      await interaction.reply({ content: "▶️ موزیکەکە بەردەوام بووەوە!", ephemeral: true });
+    } else {
+      queue.node.pause();
+      await interaction.reply({ content: "⏸️ موزیکەکە ڕاوەستا.", ephemeral: true });
+    }
+  }
+  else if (interaction.isButton() && (interaction.customId === "skip_music" || interaction.customId === "skip_song_btn")) {
+    const player = interaction.client.player;
+    const queue = player.nodes.get(interaction.guildId);
+    if (!queue || !queue.isPlaying()) return interaction.reply({ content: "❌ هیچ گۆرانییەک لە لیستدا نییە!", ephemeral: true });
+    
+    queue.node.skip();
+    await interaction.reply({ content: "⏭️ گۆرانییەکە سکیپ کرا!", ephemeral: true });
+  }
+  else if (interaction.isButton() && interaction.customId === "stop_music") {
+    const player = interaction.client.player;
+    const queue = player.nodes.get(interaction.guildId);
+    if (!queue) return interaction.reply({ content: "❌ هیچ پلەیەرێک کار ناکات!", ephemeral: true });
+    
+    queue.delete();
+    await interaction.reply({ content: "⏹️ پلەیەرەکە وەستا و سڕایەوە.", ephemeral: true });
   }
 });
 

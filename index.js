@@ -23,18 +23,14 @@ const {
   PermissionFlagsBits,
   Events,
   REST,
-  Routes,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  ActionRowBuilder,
-  EmbedBuilder
+  Routes
 } = require("discord.js");
 
 const { GiveawaysManager } = require("discord-giveaways");
 const { Player } = require("discord-player");
-const { YoutubeExtractor } = require("@discord-player/extractor");
-const { SpotifyExtractor } = require("@discord-player/extractor");
+const { YoutubeExtractor, SpotifyExtractor } = require("@discord-player/extractor");
+
+const spamTracker = new Map();
 
 const client = new Client({
   intents: [
@@ -113,6 +109,123 @@ client.once(Events.ClientReady, async (c) => {
   }
 });
 
+client.on(Events.MessageCreate, async (message) => {
+  if (message.author.bot) {
+    if (message.client.user.id !== message.author.id && message.inGuild()) {
+      try {
+        await message.delete();
+      } catch (e) {}
+    }
+    return;
+  }
+
+  if (!message.inGuild()) return;
+
+  try {
+    if (fs.existsSync("./antispam.json")) {
+      const config = JSON.parse(fs.readFileSync("./antispam.json", "utf8"));
+      if (config.enabled) {
+        if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+          const now = Date.now();
+          const userId = message.author.id;
+          const channel = message.channel;
+
+          if (!spamTracker.has(userId)) {
+            spamTracker.set(userId, []);
+          }
+
+          const timestamps = spamTracker.get(userId);
+          timestamps.push(now);
+
+          const timeWindow = 7000;
+          const recent = timestamps.filter(time => now - time < timeWindow);
+          spamTracker.set(userId, recent);
+
+          if (recent.length >= 5) {
+            spamTracker.set(userId, []);
+
+            const member = await message.guild.members.fetch(userId).catch(() => null);
+
+            if (member && member.moderatable) {
+              await member.timeout(5 * 60 * 1000, 'سپام کردن - ٥ پەیامی لەسەریەک').catch(() => {});
+            }
+
+            const fetched = await channel.messages.fetch({ limit: 30 }).catch(() => null);
+            if (fetched) {
+              const userMsgs = fetched.filter(m => m.author.id === userId);
+              for (const [id, msg] of userMsgs) {
+                await msg.delete().catch(() => {});
+              }
+            }
+
+            const warningMsg = await channel.send({
+              content: `⚠️ <@${userId}> **سپام قەدەغەیە!** ٥ پەیامت لەسەریەک نارد، سەرجەم پەیامەکانت سڕرانەوە و بۆ ماوەی **٥ خولەک** مێوتکرایت.`
+            }).catch(() => {});
+
+            if (warningMsg) {
+              setTimeout(() => {
+                warningMsg.delete().catch(() => {});
+              }, 5000);
+            }
+            return;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Anti-spam error:", err);
+  }
+
+  if (message.mentions.has(message.client.user)) {
+    const query = message.content
+      .replace(`<@!${message.client.user.id}>`, '')
+      .replace(`<@${message.client.user.id}>`, '')
+      .trim();
+
+    if (query) {
+      try {
+        await message.channel.sendTyping();
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: query }]
+            }]
+          })
+        });
+
+        const data = await response.json();
+        const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "ببوورە، ناتوانم لەم پرسیارە تێبگەم.";
+
+        await message.reply(replyText);
+      } catch (error) {
+        console.error("Gemini AI Error:", error);
+        await message.reply("ببوورە، هەڵەیەک ڕوویدا لە پەیوەندیکردن بە زیرەکی دەستکردەوە.");
+      }
+      return;
+    }
+  }
+
+  if (!message.content.startsWith(PREFIX)) return;
+
+  const args = message.content.slice(PREFIX.length).trim().split(/ +/);
+  const commandName = args.shift().toLowerCase();
+
+  const command = client.commands.get(commandName);
+  if (!command) return;
+
+  try {
+    await command.execute(message, args);
+  } catch (error) {
+    console.error(error);
+    await message.channel.send("❌ هەڵەیەک ڕوویدا لە جێبەجێکردنی ئەم فەرمانە.").catch(() => {});
+  }
+});
+
 client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isChatInputCommand()) {
     const command = client.slashCommands.get(interaction.commandName);
@@ -129,81 +242,60 @@ client.on(Events.InteractionCreate, async (interaction) => {
       }
     }
   }
-  else if (interaction.isButton() && interaction.customId === "search_music") {
-    const modal = new ModalBuilder()
-      .setCustomId("musicSearchModal")
-      .setTitle("گەڕانی گۆرانی");
-
-    const songInput = new TextInputBuilder()
-      .setCustomId("songQueryInput")
-      .setLabel("ناوی گۆرانی یان لینکی یوتیوب/سپۆتیفای")
-      .setStyle(TextInputStyle.Short)
-      .setPlaceholder("Song name or link...")
-      .setRequired(true);
-
-    modal.addComponents(new ActionRowBuilder().addComponents(songInput));
-    return await interaction.showModal(modal);
-  }
-  else if (interaction.isModalSubmit() && interaction.customId === "musicSearchModal") {
-    const vc = interaction.member.voice.channel;
-    if (!vc) {
-      return interaction.reply({ content: "❌ تکایە سەرەتا بچۆ ناو کەناڵێکی دەنگییەوە.", ephemeral: true });
-    }
-
-    const query = interaction.fields.getTextInputValue("songQueryInput");
+  else if (interaction.isButton() && interaction.customId === "create_ticket") {
     try {
-      await interaction.deferReply();
-      const player = interaction.client.player;
-      
-      const { track } = await player.play(vc, query, {
-        nodeOptions: { 
-          metadata: interaction.channel, 
-          leaveOnEmpty: false, 
-          leaveOnEnd: false, 
-          selfDeaf: true 
-        }
+      const channel = await interaction.guild.channels.create({
+        name: `ticket-${interaction.user.username}`,
+        type: ChannelType.GuildText,
+        permissionOverwrites: [
+          {
+            id: interaction.guild.id,
+            deny: [PermissionFlagsBits.ViewChannel],
+          },
+          {
+            id: interaction.user.id,
+            allow: [
+              PermissionFlagsBits.ViewChannel,
+              PermissionFlagsBits.SendMessages,
+              PermissionFlagsBits.ReadMessageHistory,
+            ],
+          },
+        ],
       });
 
-      const embed = new EmbedBuilder()
-        .setColor('#1DB954')
-        .setTitle('🎵 دەنگپەخشکرا')
-        .setDescription(`🎶 **${track.title}**\n👤 **گۆرانیبێژ:** ${track.author}`);
+      await channel.send(`🎫 بەخێر بێیت ${interaction.user}!\nتکایە کێشەکەت ڕوون بکەرەوە.`);
 
-      await interaction.editReply({ embeds: [embed] });
-    } catch (e) {
-      console.error(e);
-      await interaction.editReply("❌ نەتوانرا گۆرانییەکە بدۆزرێتەوە یان لێبدرێت. دڵنیا ببەوە لە ڕاستی لینکەکە.");
+      await interaction.reply({
+        content: `✅ تیکێتەکەت دروستکرا: ${channel}`,
+        ephemeral: true,
+      });
+    } catch (error) {
+      console.error(error);
+      if (!interaction.replied) {
+        await interaction.reply({
+          content: "❌ نەتوانرا تیکێتەکە دروست بکرێت.",
+          ephemeral: true,
+        });
+      }
     }
-  }
-  else if (interaction.isButton() && interaction.customId === "pause_resume") {
-    const player = interaction.client.player;
-    const queue = player.nodes.get(interaction.guildId);
-    if (!queue || !queue.isPlaying()) return interaction.reply({ content: "❌ هیچ گۆرانییەک کار ناکات!", ephemeral: true });
-    
-    if (queue.node.isPaused()) {
-      queue.node.resume();
-      await interaction.reply({ content: "▶️ موزیکەکە بەردەوام بووەوە!", ephemeral: true });
-    } else {
-      queue.node.pause();
-      await interaction.reply({ content: "⏸️ موزیکەکە ڕاوەستا.", ephemeral: true });
-    }
-  }
-  else if (interaction.isButton() && (interaction.customId === "skip_music" || interaction.customId === "skip_song_btn")) {
-    const player = interaction.client.player;
-    const queue = player.nodes.get(interaction.guildId);
-    if (!queue || !queue.isPlaying()) return interaction.reply({ content: "❌ هیچ گۆرانییەک لە لیستدا نییە!", ephemeral: true });
-    
-    queue.node.skip();
-    await interaction.reply({ content: "⏭️ گۆرانییەکە سکیپ کرا!", ephemeral: true });
-  }
-  else if (interaction.isButton() && interaction.customId === "stop_music") {
-    const player = interaction.client.player;
-    const queue = player.nodes.get(interaction.guildId);
-    if (!queue) return interaction.reply({ content: "❌ هیچ پلەیەرێک کار ناکات!", ephemeral: true });
-    
-    queue.delete();
-    await interaction.reply({ content: "⏹️ پلەیەرەکە وەستا و سڕایەوە.", ephemeral: true });
   }
 });
+
+const safeRequire = (filePath) => {
+  try {
+    if (fs.existsSync(filePath + ".js") || fs.existsSync(filePath)) {
+      require(filePath)(client);
+    }
+  } catch (e) {
+    console.log(`Module optional load skipped: ${filePath}`);
+  }
+};
+
+safeRequire("./welcome");
+safeRequire("./welcomeCard");
+safeRequire("./autorole");
+safeRequire("./events/logs");
+safeRequire("./events/searchMenu");
+safeRequire("./helpMenu");
 
 client.login(process.env.TOKEN);

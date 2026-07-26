@@ -1,31 +1,30 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('play')
-        .setDescription('لێدانی گۆرانی بە ناونیشان یان لینک')
+        .setName('spotify')
+        .setDescription('لێدانی گۆرانی یان پلەیلیستی سپۆتیفای بە لینک')
         .addStringOption(option =>
-            option.setName('song')
-                .setDescription('ناوی گۆرانی یان لینکی یوتیوب/سپۆتیفای')
+            option.setName('link')
+                .setDescription('لینکی گۆرانی یان پلەیلیستی سپۆتیفای')
                 .setRequired(true)),
 
     async execute(interaction) {
-        const vc = interaction.member.voice.channel;
-        
-        if (!vc) {
+        const voiceChannel = interaction.member.voice.channel;
+        if (!voiceChannel) {
             return interaction.reply({ 
-                content: "❌ تکایە سەرەتا بچۆ ناو کەناڵێکی دەنگییەوە.", 
+                content: '❌ تکایە سەرەتا بچۆ ناو فۆیس چانڵێکەوە!', 
                 ephemeral: true 
             });
         }
 
-        const query = interaction.options.getString('song');
+        const playlistUrl = interaction.options.getString('link');
+
+        await interaction.deferReply();
 
         try {
-            await interaction.deferReply();
             const player = interaction.client.player;
-            
-            const { track } = await player.play(vc, query, {
+            const { track } = await player.play(voiceChannel, playlistUrl, {
                 nodeOptions: {
                     metadata: interaction.channel,
                     leaveOnEmpty: false,
@@ -34,15 +33,16 @@ module.exports = {
                 }
             });
 
-            await interaction.editReply(`🎵 ئێستا دەنگپەخش کراوە: **${track.title}**`);
-        } catch (e) {
-            console.error(e);
-            const errorMsg = "❌ هەڵەیەک ڕوویدا لە کاتی پەخشکردنی گۆرانییەکە.";
-            if (interaction.deferred || interaction.replied) {
-                await interaction.editReply(errorMsg);
-            } else {
-                await interaction.reply({ content: errorMsg, ephemeral: true });
-            }
+            const embed = new EmbedBuilder()
+                .setColor('#1DB954')
+                .setTitle(`🎵 سپۆتیفای`)
+                .setDescription(`🎶 ئێستا دەنگپەخش کراوە: **${track.title}**`);
+
+            await interaction.editReply({ embeds: [embed] });
+
+        } catch (error) {
+            console.error(error);
+            await interaction.editReply(`❌ هەڵەیەک ڕوودا لە خوێندنەوەی لینکی سپۆتیفای.`);
         }
     },
 };

@@ -180,40 +180,6 @@ client.on(Events.MessageCreate, async (message) => {
     console.error("Anti-spam error:", err);
   }
 
-  if (message.mentions.has(message.client.user)) {
-    const query = message.content
-      .replace(`<@!${message.client.user.id}>`, '')
-      .replace(`<@${message.client.user.id}>`, '')
-      .trim();
-
-    if (query) {
-      try {
-        await message.channel.sendTyping();
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{ text: query }]
-            }]
-          })
-        });
-
-        const data = await response.json();
-        const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "ببوورە، ناتوانم لەم پرسیارە تێبگەم.";
-
-        await message.reply(replyText);
-      } catch (error) {
-        console.error("Gemini AI Error:", error);
-        await message.reply("ببوورە، هەڵەیەک ڕوویدا لە پەیوەندیکردن بە زیرەکی دەستکردەوە.");
-      }
-      return;
-    }
-  }
-
   if (!message.content.startsWith(PREFIX)) return;
 
   const args = message.content.slice(PREFIX.length).trim().split(/ +/);

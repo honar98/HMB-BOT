@@ -1,7 +1,7 @@
 {
-  "name": "hmb-bot",
+  "name": "music",
   "version": "1.0.0",
-  "description": "HMB Discord Bot with Advanced Features",
+  "description": "Music Bot with Advanced Features",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"

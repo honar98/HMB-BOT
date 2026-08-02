@@ -278,10 +278,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
       const res = await player.play(vc, query, {
         nodeOptions: { 
           metadata: interaction.channel, 
-          leaveOnEmpty: false,
-          leaveOnEmptyCooldown: 0,
-          leaveOnEnd: false,
-          leaveOnStop: false,
+          leaveOnEmpty: false, 
+          leaveOnEnd: false, 
           selfDeaf: true 
         }
       });

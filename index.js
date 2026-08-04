@@ -55,7 +55,7 @@ client.player = player;
 (async () => {
   try {
     await player.extractors.loadMulti(DefaultExtractors);
-    console.log("🎵 Default Extractors loaded successfully!");
+    console.log("🎵 YouTube, Spotify, and TikTok Extractors loaded successfully!");
   } catch (e) {
     console.error("Error loading extractors:", e);
   }
@@ -252,13 +252,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
   else if (interaction.isButton() && interaction.customId === "search_music") {
     const modal = new ModalBuilder()
       .setCustomId("musicSearchModal")
-      .setTitle("گەڕانی گۆرانی");
+      .setTitle("گەڕانی گۆرانی (یوتیوب، سپۆتیفای، تیکتۆک)");
 
     const songInput = new TextInputBuilder()
       .setCustomId("songQueryInput")
-      .setLabel("ناوی گۆرانی یان لینکی یوتیوب/سپۆتیفای")
+      .setLabel("ناوی گۆرانی یان لینکی یوتیوب/سپۆتیفای/تیکتۆک")
       .setStyle(TextInputStyle.Short)
-      .setPlaceholder("Song name or link...")
+      .setPlaceholder("Song name or YouTube/Spotify/TikTok link...")
       .setRequired(true);
 
     modal.addComponents(new ActionRowBuilder().addComponents(songInput));
@@ -294,7 +294,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await interaction.editReply({ embeds: [embed] });
     } catch (e) {
       console.error(e);
-      await interaction.editReply("❌ نەتوانرا گۆرانییەکە بدۆزرێتەوە یان لێبدرێت. دڵنیا ببەوە لە ڕاستی لینکەکە.");
+      await interaction.editReply("❌ نەتوانرا گۆرانییەکە بدۆزرێتەوە یان لێبدرێت. دڵنیا ببەوە لە ڕاستی لینکەکە (یوتیوب، سپۆتیفای، تیکتۆک).");
     }
   }
   else if (interaction.isButton() && interaction.customId === "pause_resume") {

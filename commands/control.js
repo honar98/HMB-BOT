@@ -16,7 +16,7 @@ module.exports = {
             .setTitle('🎵 تابلۆی کۆنتڕۆڵی موزیک (HMB Music)')
             .setDescription(currentTrack 
                 ? `🎶 **ئێستا لێدەدرێت:**\n[${currentTrack.title}](${currentTrack.url})\n\n👤 **گۆرانیبێژ:** ${currentTrack.author}\n⏱️ **ماوە:** ${currentTrack.duration}` 
-                : '❌ هیچ گۆرانییەک لە ئێستادا کار ناکات.\n\nتکایە دوگمەی گەڕان بەکاربهێنە یان فەمانی `/play` بنووسە.')
+                : '❌ هیچ گۆرانییەک لە ئێستادا کار ناکات.\n\nتکایە دوگمەی گەڕان بەکاربهێنە بۆ لێدانی گۆرانی لە **یوتیوب، سپۆتیفای یان تیکتۆک**.')
             .setThumbnail(currentTrack ? currentTrack.thumbnail : null)
             .setFooter({ text: `داواکراوە لەلایەن: ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
 
@@ -43,7 +43,7 @@ module.exports = {
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId('search_music')
-                    .setLabel('گەڕانی گۆرانی')
+                    .setLabel('گەڕان (YouTube, Spotify, TikTok)')
                     .setStyle(ButtonStyle.Primary)
                     .setEmoji('🔍'),
                 new ButtonBuilder()

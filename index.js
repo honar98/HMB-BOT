@@ -270,11 +270,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return interaction.reply({ content: "❌ تکایە سەرەتا بچۆ ناو کەناڵێکی دەنگییەوە.", ephemeral: true });
     }
 
-    const query = interaction.fields.getTextInputValue("songQueryInput");
+    let query = interaction.fields.getTextInputValue("songQueryInput");
     try {
       await interaction.deferReply();
       const player = interaction.client.player;
       
+      // پشکنین و کردنەوەی لینکی کورتکراوەی تیکتۆک بۆ ئەوەی کاربکات
+      if (query.includes("tiktok.com") || query.includes("vt.tiktok.com")) {
+        try {
+          const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+          const response = await fetch(query, { method: 'HEAD', redirect: 'follow' });
+          if (response && response.url) {
+            query = response.url;
+          }
+        } catch (err) {
+          console.log("TikTok link redirect error:", err);
+        }
+      }
+
       const res = await player.play(vc, query, {
         nodeOptions: { 
           metadata: interaction.channel, 

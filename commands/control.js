@@ -3,7 +3,7 @@ const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Embed
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('control')
-        .setDescription('کردنەوەی تابلۆی پێشکەوتووی کۆنتڕۆڵی موزیک v2026'),
+        .setDescription('تابلۆی کۆنتڕۆڵی پێشکەوتووی موزیک v2026'),
     
     async execute(interaction) {
         const player = interaction.client.player;
@@ -12,55 +12,94 @@ module.exports = {
         const currentTrack = queue && queue.isPlaying() ? queue.currentTrack : null;
 
         const embed = new EmbedBuilder()
-            .setColor(currentTrack ? '#00FFFF' : '#FF0055')
-            .setTitle('🎶 HMB MUSIC CONTROL CENTER v2026')
+            .setColor('#2F3136')
             .setDescription(currentTrack 
-                ? `╭──────────────────────╮\n🎵 **ئێستا لێدەدرێت:**\n[${currentTrack.title}](${currentTrack.url})\n\n👤 **گۆرانیبێژ:** \`${currentTrack.author}\`\n⏱️ **ماوە:** \`${currentTrack.duration}\`\n╰──────────────────────╯` 
-                : '╭──────────────────────╮\n❌ **هیچ گۆرانییەک کار ناکات!**\n\n🔹 تکایە دوگمەی خوارەوە بەکاربهێنە بۆ گەڕان و لێدانی گۆرانی لە:\n✨ **[ YouTube • Spotify • TikTok ]**\n╰──────────────────────╯')
-            .setThumbnail(currentTrack ? currentTrack.thumbnail : 'https://i.imgur.com/492b3py.png')
-            .addFields(
-                { name: '🌐 دۆخی سیستەم', value: '`🟢 Online (2026 Ready)`', inline: true },
-                { name: '🎛️ بەکارهێنەر', value: `\`${interaction.user.username}\``, inline: true }
-            )
-            .setTimestamp()
-            .setFooter({ text: 'HMB Bot • Advanced Music System', iconURL: interaction.client.user.displayAvatarURL() });
+                ? `🎶 **${currentTrack.title}** \`(${currentTrack.duration})\`` 
+                : '❌ **هیچ گۆرانییەک لە ئێستادا کار ناکات.**');
 
+        // ڕیزبەندی یەکەم: Playback (پێشوو، لێدان/وەستان، داهاتوو، وەستاندن)
         const row1 = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
-                    .setCustomId('pause_resume')
-                    .setLabel('وەستان / لێدان')
+                    .setCustomId('back_music')
                     .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏯️'),
+                    .setEmoji('⏮️'),
+                new ButtonBuilder()
+                    .setCustomId('pause_resume')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('▶️'),
                 new ButtonBuilder()
                     .setCustomId('skip_music')
-                    .setLabel('سکیپ')
-                    .setStyle(ButtonStyle.Success)
+                    .setStyle(ButtonStyle.Secondary)
                     .setEmoji('⏭️'),
                 new ButtonBuilder()
                     .setCustomId('stop_music')
-                    .setLabel('وەستاندن')
-                    .setStyle(ButtonStyle.Danger)
-                    .setEmoji('⏹️')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('✖️')
             );
 
+        // ڕیزبەندی دووەم: Music Actions (لیستی چاوەڕوانی، گۆرانی لێدراو، زیادکردن، گەڕان، تێکەڵ)
         const row2 = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
+                    .setCustomId('queue_music')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('☰'),
+                new ButtonBuilder()
+                    .setCustomId('lyrics_music')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('🎵'),
+                new ButtonBuilder()
+                    .setCustomId('add_playlist')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('➕'),
+                new ButtonBuilder()
                     .setCustomId('search_music')
-                    .setLabel('گەڕان (YouTube, Spotify, TikTok)')
-                    .setStyle(ButtonStyle.Primary)
+                    .setStyle(ButtonStyle.Secondary)
                     .setEmoji('🔍'),
                 new ButtonBuilder()
-                    .setCustomId('queue_music')
-                    .setLabel('لیستی چاوەڕوانی')
+                    .setCustomId('shuffle_music')
                     .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('📜')
+                    .setEmoji('🔀')
+            );
+
+        // ڕیزبەندی سێیەم: Controls (لایکی گۆرانی، دەنگ بەرزکردنەوە، کەمکردنەوە، فیلتەر)
+        const row3 = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId('like_music')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('🤍'),
+                new ButtonBuilder()
+                    .setCustomId('volume_down')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('🔉'),
+                new ButtonBuilder()
+                    .setCustomId('volume_up')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('🔊'),
+                new ButtonBuilder()
+                    .setCustomId('filter_music')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('🎛️')
+            );
+
+        // ڕیزبەندی چوارەم: Library (دڵخوازەکان، مێژوو)
+        const row4 = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId('favorites_library')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('❤️'),
+                new ButtonBuilder()
+                    .setCustomId('history_library')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('🕒')
             );
 
         await interaction.reply({
             embeds: [embed],
-            components: [row1, row2],
+            components: [row1, row2, row3, row4],
             ephemeral: false
         });
     },

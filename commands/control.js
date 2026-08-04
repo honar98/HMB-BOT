@@ -17,84 +17,80 @@ module.exports = {
                 ? `🎶 **${currentTrack.title}** \`(${currentTrack.duration})\`` 
                 : '❌ **هیچ گۆرانییەک لە ئێستادا کار ناکات.**');
 
-        // ڕیزبەندی یەکەم: Playback (پێشوو، لێدان/وەستان، داهاتوو، وەستاندن)
         const row1 = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId('back_music')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏮️'),
+                    .setLabel('پێشوو')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('pause_resume')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('▶️'),
+                    .setLabel('وەستان/لێدان')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('skip_music')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏭️'),
+                    .setLabel('سکیپ')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('stop_music')
+                    .setLabel('لابردن')
                     .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('✖️')
             );
 
-        // ڕیزبەندی دووەم: Music Actions (لیستی چاوەڕوانی، گۆرانی لێدراو، زیادکردن، گەڕان، تێکەڵ)
         const row2 = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId('queue_music')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('☰'),
+                    .setLabel('لیست')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('lyrics_music')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('🎵'),
+                    .setLabel('تێکست')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('add_playlist')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('➕'),
+                    .setLabel('زیادکردن')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('search_music')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('🔍'),
+                    .setLabel('گەڕان')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('shuffle_music')
+                    .setLabel('تێکەڵ')
                     .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('🔀')
             );
 
-        // ڕیزبەندی سێیەم: Controls (لایکی گۆرانی، دەنگ بەرزکردنەوە، کەمکردنەوە، فیلتەر)
         const row3 = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId('like_music')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('🤍'),
+                    .setLabel('دڵخواز')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('volume_down')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('🔉'),
+                    .setLabel('دەنگی کەم')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('volume_up')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('🔊'),
+                    .setLabel('دەنگی بەرز')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('filter_music')
+                    .setLabel('فیلتەر')
                     .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('🎛️')
             );
 
-        // ڕیزبەندی چوارەم: Library (دڵخوازەکان، مێژوو)
         const row4 = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId('favorites_library')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('❤️'),
+                    .setLabel('ئایتمەکان')
+                    .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('history_library')
+                    .setLabel('مێژوو')
                     .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('🕒')
             );
 
         await interaction.reply({

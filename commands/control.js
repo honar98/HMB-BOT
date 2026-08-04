@@ -3,7 +3,7 @@ const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Embed
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('control')
-        .setDescription('تابلۆی کۆنتڕۆڵی پێشکەوتووی موزیک v2026'),
+        .setDescription('کردنەوەی تابلۆی پێشکەوتووی کۆنتڕۆڵی موزیک v2026'),
     
     async execute(interaction) {
         const player = interaction.client.player;
@@ -12,13 +12,18 @@ module.exports = {
         const currentTrack = queue && queue.isPlaying() ? queue.currentTrack : null;
 
         const embed = new EmbedBuilder()
-            .setColor(currentTrack ? '#1DB954' : '#FF0000')
-            .setTitle('🎵 تابلۆی کۆنتڕۆڵی موزیک (HMB Music)')
+            .setColor(currentTrack ? '#00FFFF' : '#FF0055')
+            .setTitle('🎶 HMB MUSIC CONTROL CENTER v2026')
             .setDescription(currentTrack 
-                ? `🎶 **ئێستا لێدەدرێت:**\n[${currentTrack.title}](${currentTrack.url})\n\n👤 **گۆرانیبێژ:** ${currentTrack.author}\n⏱️ **ماوە:** ${currentTrack.duration}` 
-                : '❌ هیچ گۆرانییەک لە ئێستادا کار ناکات.\n\nتکایە دوگمەی گەڕان بەکاربهێنە یان فەمانی `/play` بنووسە.')
-            .setThumbnail(currentTrack ? currentTrack.thumbnail : null)
-            .setFooter({ text: `داواکراوە لەلایەن: ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
+                ? `╭──────────────────────╮\n🎵 **ئێستا لێدەدرێت:**\n[${currentTrack.title}](${currentTrack.url})\n\n👤 **گۆرانیبێژ:** \`${currentTrack.author}\`\n⏱️ **ماوە:** \`${currentTrack.duration}\`\n╰──────────────────────╯` 
+                : '╭──────────────────────╮\n❌ **هیچ گۆرانییەک کار ناکات!**\n\n🔹 تکایە دوگمەی خوارەوە بەکاربهێنە بۆ گەڕان و لێدانی گۆرانی لە:\n✨ **[ YouTube • Spotify • TikTok ]**\n╰──────────────────────╯')
+            .setThumbnail(currentTrack ? currentTrack.thumbnail : 'https://i.imgur.com/492b3py.png')
+            .addFields(
+                { name: '🌐 دۆخی سیستەم', value: '`🟢 Online (2026 Ready)`', inline: true },
+                { name: '🎛️ بەکارهێنەر', value: `\`${interaction.user.username}\``, inline: true }
+            )
+            .setTimestamp()
+            .setFooter({ text: 'HMB Bot • Advanced Music System', iconURL: interaction.client.user.displayAvatarURL() });
 
         const row1 = new ActionRowBuilder()
             .addComponents(
@@ -31,11 +36,7 @@ module.exports = {
                     .setCustomId('skip_music')
                     .setLabel('سکیپ')
                     .setStyle(ButtonStyle.Success)
-                    .setEmoji('⏭️')
-            );
-
-        const row2 = new ActionRowBuilder()
-            .addComponents(
+                    .setEmoji('⏭️'),
                 new ButtonBuilder()
                     .setCustomId('stop_music')
                     .setLabel('وەستاندن')
@@ -43,11 +44,11 @@ module.exports = {
                     .setEmoji('⏹️')
             );
 
-        const row3 = new ActionRowBuilder()
+        const row2 = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId('search_music')
-                    .setLabel('گەڕانی گۆرانی')
+                    .setLabel('گەڕان (YouTube, Spotify, TikTok)')
                     .setStyle(ButtonStyle.Primary)
                     .setEmoji('🔍'),
                 new ButtonBuilder()
@@ -59,7 +60,7 @@ module.exports = {
 
         await interaction.reply({
             embeds: [embed],
-            components: [row1, row2, row3],
+            components: [row1, row2],
             ephemeral: false
         });
     },
